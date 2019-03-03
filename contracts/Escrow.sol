@@ -21,6 +21,9 @@ contract Escrow {
         _;
     }
 
+    /// @notice This contract accepts ETH transfers
+    function () external payable {}
+
     /// @notice To setup the initial tokens that the user will store when creating the escrow
     /// @param _initialTokens The initial tokens that he'll use for the DAX
     /// @param _initialFunds The funds for each token in order so that the contract knows how many tokens he sent here
