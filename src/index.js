@@ -35,11 +35,12 @@ class Sidebar extends React.Component {
                 <div className="your-portfolio">Your portfolio:</div>
                 <div className="grid-center">ETH:</div><div className="grid-center">10</div>
                 <div className="grid-center">BAT:</div><div className="grid-center">200</div>
+                <div className="money-management">Money management:</div>
+                <button className="button-outline">Deposit</button>
+                <button className="button-outline">Withdraw</button>
                 <div className="actions">Actions:</div>
-                <button>Deposit</button>
-                <button>Withdraw</button>
                 <button>Buy</button>
-                <button>Sell</button>
+                <button className="sell">Sell</button>
                 <select defaultValue="market-order" onChange={selected => {
                     if(selected.target.value == 'limit-order') this.setState({showLimitOrderInput: true})
                     else this.setState({showLimitOrderInput: false})
