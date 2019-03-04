@@ -5,12 +5,33 @@ import './index.styl'
 class Main extends React.Component {
     constructor() {
         super()
+
+        this.state = {
+            trades: [{
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }]
+        }
     }
 
     render() {
         return (
-            <div>
+            <div className="main-container">
                 <Sidebar />
+                <Trades
+                    trades={this.state.trades}
+                />
             </div>
         )
     }
@@ -61,8 +82,12 @@ class Trades extends React.Component {
     }
 
     render() {
+        const trades = this.props.trades.map(trade => (
+            <div key={trade.id}>{trade.type}</div>
+        ))
         return (
-            <div>
+            <div className="trades">
+                {trades}
             </div>
         )
     }

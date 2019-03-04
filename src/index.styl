@@ -40,8 +40,11 @@ select
 .hidden
     display: none
 
+.main-container
+    display: grid
+    grid-template-columns: 20% 60% 30%
+
 .sidebar
-    width: 20%
     height: 100vh
     background-color: rgb(245, 245, 245)
     padding: 3%
@@ -90,3 +93,9 @@ select
     input
         grid-column: 1 / span 2
         align-self: center
+
+.trades
+    height: 100vh
+    background-color: rgb(224, 218, 218)
+    padding: 3%
+    display: grid
