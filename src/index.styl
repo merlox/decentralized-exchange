@@ -1,0 +1,49 @@
+body
+    margin: 0
+    font-family: sans-serif
+
+.hidden
+    display: none
+
+.sidebar
+    width: 20%
+    background-color: rgb(245, 245, 245)
+    padding: 3%
+    display: grid
+    grid-template-columns: 1fr 1fr
+    grid-template-rows: 5% 50px 5% 1fr 1fr 5% 50px 50px 1fr 1fr
+    grid-gap: 10px
+
+    .selected-assets-title
+        grid-column: 1 / span 2
+        align-self: center
+
+    .selected-asset-one
+        font-size: 15pt
+        align-self: center
+        justify-self: center
+
+    .selected-asset-two
+        font-size: 15pt
+        align-self: center
+        justify-self: center
+
+    .your-portfolio
+        grid-column: 1 / span 2
+        align-self: center
+
+    .grid-center
+        align-self: center
+        justify-self: center
+
+    .actions
+        grid-column: 1 / span 2
+        align-self: center
+
+    select
+        grid-column: 1 / span 2
+        align-self: center
+
+    input
+        grid-column: 1 / span 2
+        align-self: center
