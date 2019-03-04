@@ -96,6 +96,43 @@ select
 
 .trades
     height: 100vh
-    background-color: rgb(224, 218, 218)
+    background-color: #e8e8e8
     padding: 3%
     display: grid
+    grid-template-rows: auto 1fr auto 1fr
+
+    .buy-trades-container, .sell-trades-container
+        display: grid
+        grid-template-columns: repeat(5, 20%)
+        grid-template-rows: repeat(3, auto)
+
+    .trade-container
+        justify-self: center
+        align-self: center
+        padding: 10px
+        width: 200px
+        height: 100px
+        color: white
+        margin-right: 10px
+        display: grid
+        grid-template-columns: 1fr 1fr
+
+        & div:nth-child(1)
+            align-self: center
+            justify-self: center
+
+        & div:nth-child(2)
+            align-self: center
+            justify-self: center
+
+        .trade-pricing
+            grid-column: 1 / span 2
+            align-self: center
+            justify-self: center
+            font-size: 10pt
+
+    .buy-trade
+        background-color: #6285df
+
+    .sell-trade
+        background-color: #df6262

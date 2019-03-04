@@ -21,6 +21,202 @@ class Main extends React.Component {
                 secondSymbol: 'BAT',
                 quantity: 80, // You want to buy 80 secondSymbol
                 price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 123,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 120, // You want to buy 120 firstSymbol
+                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 80, // You want to buy 80 secondSymbol
+                price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
             }]
         }
     }
@@ -82,12 +278,28 @@ class Trades extends React.Component {
     }
 
     render() {
-        const trades = this.props.trades.map(trade => (
-            <div key={trade.id}>{trade.type}</div>
+        let buyTrades = this.props.trades.filter(trade => trade.type == 'buy')
+        buyTrades = buyTrades.map((trade, index) => (
+            <div key={trade.id + index} className="trade-container buy-trade">
+                <div>{trade.firstSymbol}</div>
+                <div>{trade.secondSymbol}</div>
+                <div className="trade-pricing">{trade.quantity} {trade.firstSymbol} at {trade.price} {trade.secondSymbol} each</div>
+            </div>
+        ))
+        let sellTrades = this.props.trades.filter(trade => trade.type == 'sell')
+        sellTrades = sellTrades.map((trade, index) => (
+            <div key={trade.id + index} className="trade-container sell-trade">
+                <div>{trade.firstSymbol}</div>
+                <div>{trade.secondSymbol}</div>
+                <div className="trade-pricing">{trade.quantity} {trade.firstSymbol} at {trade.price} {trade.secondSymbol} each</div>
+            </div>
         ))
         return (
             <div className="trades">
-                {trades}
+                <div>Buy</div>
+                <div className="buy-trades-container">{buyTrades}</div>
+                <div>Sell</div>
+                <div className="sell-trades-container">{sellTrades}</div>
             </div>
         )
     }
