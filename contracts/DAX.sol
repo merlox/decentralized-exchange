@@ -12,6 +12,8 @@
 
 pragma solidity ^0.5.4;
 
+import './Escrow.sol';
+
 interface IERC20 {
     function transfer(address to, uint256 value) external returns (bool);
     function approve(address spender, uint256 value) external returns (bool);
