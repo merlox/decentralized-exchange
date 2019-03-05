@@ -41,7 +41,7 @@ contract DAX {
         _;
     }
 
-    function () public {
+    function () external {
         revert();
     }
 
@@ -52,7 +52,7 @@ contract DAX {
     /// @notice To whitelist a token so that is tradable in the exchange
     /// @param _token The token to whitelist
     /// @param _tokenPair The token pairs to whitelist for this new token
-    function whitelistToken(address _token, bytes32[][] _tokenPairs) public onlyOwner {}
+    function whitelistToken(address _token, bytes32[] memory _tokenPairs) public onlyOwner {}
 
     /// @notice To create a market order at the most profitable price given a token pair, type of order (buy or sell) and the amount of tokens to trade
     function marketOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity) public {}
@@ -64,6 +64,6 @@ contract DAX {
     /// @param _token The token address to extract
     function extractToken(address _token) public onlyOwner {
         IERC20 token = IERC20(_token);
-        token.transfer(owner, token.balance(address(this)));
+        token.transfer(owner, token.balanceOf(address(this)));
     }
 }
