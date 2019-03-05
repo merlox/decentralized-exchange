@@ -103,15 +103,22 @@ select
 
     .buy-trades-container, .sell-trades-container
         display: grid
-        grid-template-columns: repeat(5, 20%)
-        grid-template-rows: repeat(3, auto)
+        grid-row-gap: 2px
+
+    .buy-trades-title
+        grid-column: 1 / 2
+        grid-row: 1 / 2
+
+    .sell-trades-title
+        grid-column: 2 / 3
+        grid-row: 1 / 2
 
     .trade-container
         justify-self: center
         align-self: center
         padding: 10px
         width: 200px
-        height: 100px
+        height: 50px
         color: white
         margin-right: 10px
         display: grid
@@ -129,7 +136,10 @@ select
             grid-column: 1 / span 2
             align-self: center
             justify-self: center
-            font-size: 10pt
+            font-size: 9pt
+
+            &:first-letter
+                text-transform: uppercase
 
     .buy-trade
         background-color: #6285df

@@ -217,6 +217,133 @@ class Main extends React.Component {
                 secondSymbol: 'BAT',
                 quantity: 80, // You want to buy 80 secondSymbol
                 price: 305 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }],
+            history: [{
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2,
+                price: 20
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
             }]
         }
     }
@@ -227,6 +354,9 @@ class Main extends React.Component {
                 <Sidebar />
                 <Trades
                     trades={this.state.trades}
+                />
+                <History
+                    history={this.state.history}
                 />
             </div>
         )
@@ -281,24 +411,24 @@ class Trades extends React.Component {
         let buyTrades = this.props.trades.filter(trade => trade.type == 'buy')
         buyTrades = buyTrades.map((trade, index) => (
             <div key={trade.id + index} className="trade-container buy-trade">
-                <div>{trade.firstSymbol}</div>
-                <div>{trade.secondSymbol}</div>
-                <div className="trade-pricing">{trade.quantity} {trade.firstSymbol} at {trade.price} {trade.secondSymbol} each</div>
+                <div className="trade-symbol">{trade.firstSymbol}</div>
+                <div className="trade-symbol">{trade.secondSymbol}</div>
+                <div className="trade-pricing">{trade.type} {trade.quantity} {trade.firstSymbol} at {trade.price} {trade.secondSymbol} each</div>
             </div>
         ))
         let sellTrades = this.props.trades.filter(trade => trade.type == 'sell')
         sellTrades = sellTrades.map((trade, index) => (
             <div key={trade.id + index} className="trade-container sell-trade">
-                <div>{trade.firstSymbol}</div>
-                <div>{trade.secondSymbol}</div>
-                <div className="trade-pricing">{trade.quantity} {trade.firstSymbol} at {trade.price} {trade.secondSymbol} each</div>
+                <div className="trade-symbol">{trade.firstSymbol}</div>
+                <div className="trade-symbol">{trade.secondSymbol}</div>
+                <div className="trade-pricing">{trade.type} {trade.quantity} {trade.firstSymbol} at {trade.price} {trade.secondSymbol} each</div>
             </div>
         ))
         return (
             <div className="trades">
-                <div>Buy</div>
+                <div className="buy-trades-title">Buy</div>
                 <div className="buy-trades-container">{buyTrades}</div>
-                <div>Sell</div>
+                <div className="sell-trades-title">Sell</div>
                 <div className="sell-trades-container">{sellTrades}</div>
             </div>
         )
@@ -312,8 +442,15 @@ class History extends React.Component {
     }
 
     render() {
+        const historicalTrades = this.props.history.map((trade, index) => (
+            <div key={trade.id + index} className="historical-trade">
+                <div>{trade.type} {trade.quantity} {trade.firstSymbol} for {trade.quantity * trade.price} {trade.secondSymbol} at {trade.price} each</div>
+            </div>
+        ))
         return (
             <div>
+                <div>Recent history</div>
+                {historicalTrades}
             </div>
         )
     }
