@@ -220,7 +220,7 @@ class Main extends React.Component {
             }],
             history: [{
                 id: 927,
-                type: 'sell',
+                type: 'buy',
                 firstSymbol: 'ETH',
                 secondSymbol: 'BAT',
                 quantity: 2,
@@ -234,7 +234,49 @@ class Main extends React.Component {
                 price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
             }, {
                 id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
                 type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
                 firstSymbol: 'ETH',
                 secondSymbol: 'BAT',
                 quantity: 2, // You want to buy 80 secondSymbol
@@ -262,7 +304,105 @@ class Main extends React.Component {
                 price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
             }, {
                 id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
                 type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2,
+                price: 20
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
                 firstSymbol: 'ETH',
                 secondSymbol: 'BAT',
                 quantity: 2, // You want to buy 80 secondSymbol
@@ -290,7 +430,7 @@ class Main extends React.Component {
                 price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
             }, {
                 id: 927,
-                type: 'sell',
+                type: 'buy',
                 firstSymbol: 'ETH',
                 secondSymbol: 'BAT',
                 quantity: 2, // You want to buy 80 secondSymbol
@@ -304,7 +444,14 @@ class Main extends React.Component {
                 price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
             }, {
                 id: 927,
-                type: 'sell',
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
                 firstSymbol: 'ETH',
                 secondSymbol: 'BAT',
                 quantity: 2, // You want to buy 80 secondSymbol
@@ -318,7 +465,28 @@ class Main extends React.Component {
                 price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
             }, {
                 id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2,
+                price: 20
+            }, {
+                id: 927,
                 type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
                 firstSymbol: 'ETH',
                 secondSymbol: 'BAT',
                 quantity: 2, // You want to buy 80 secondSymbol
@@ -332,7 +500,7 @@ class Main extends React.Component {
                 price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
             }, {
                 id: 927,
-                type: 'sell',
+                type: 'buy',
                 firstSymbol: 'ETH',
                 secondSymbol: 'BAT',
                 quantity: 2, // You want to buy 80 secondSymbol
@@ -340,6 +508,27 @@ class Main extends React.Component {
             }, {
                 id: 927,
                 type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'sell',
+                firstSymbol: 'ETH',
+                secondSymbol: 'BAT',
+                quantity: 2, // You want to buy 80 secondSymbol
+                price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
+            }, {
+                id: 927,
+                type: 'buy',
                 firstSymbol: 'ETH',
                 secondSymbol: 'BAT',
                 quantity: 2, // You want to buy 80 secondSymbol
@@ -376,16 +565,16 @@ class Sidebar extends React.Component {
     render() {
         return (
             <div className="sidebar">
-                <div className="selected-assets-title">Selected assets:</div>
+                <div className="selected-assets-title heading">Selected assets</div>
                 <div className="selected-asset-one">ETH</div>
                 <div className="selected-asset-two">BAT</div>
-                <div className="your-portfolio">Your portfolio:</div>
+                <div className="your-portfolio heading">Your portfolio</div>
                 <div className="grid-center">ETH:</div><div className="grid-center">10</div>
                 <div className="grid-center">BAT:</div><div className="grid-center">200</div>
-                <div className="money-management">Money management:</div>
+                <div className="money-management heading">Money management</div>
                 <button className="button-outline">Deposit</button>
                 <button className="button-outline">Withdraw</button>
-                <div className="actions">Actions:</div>
+                <div className="actions heading">Actions</div>
                 <button>Buy</button>
                 <button className="sell">Sell</button>
                 <select defaultValue="market-order" onChange={selected => {
@@ -426,9 +615,9 @@ class Trades extends React.Component {
         ))
         return (
             <div className="trades">
-                <div className="buy-trades-title">Buy</div>
+                <div className="buy-trades-title heading">Buy</div>
                 <div className="buy-trades-container">{buyTrades}</div>
-                <div className="sell-trades-title">Sell</div>
+                <div className="sell-trades-title heading">Sell</div>
                 <div className="sell-trades-container">{sellTrades}</div>
             </div>
         )
@@ -444,13 +633,13 @@ class History extends React.Component {
     render() {
         const historicalTrades = this.props.history.map((trade, index) => (
             <div key={trade.id + index} className="historical-trade">
-                <div>{trade.type} {trade.quantity} {trade.firstSymbol} for {trade.quantity * trade.price} {trade.secondSymbol} at {trade.price} each</div>
+                <div className={trade.type == 'sell' ? 'sell-trade' : 'buy-trade'}>{trade.type} {trade.quantity} {trade.firstSymbol} for {trade.quantity * trade.price} {trade.secondSymbol} at {trade.price} each</div>
             </div>
         ))
         return (
-            <div>
-                <div>Recent history</div>
-                {historicalTrades}
+            <div className="history">
+                <div className="heading">Recent history</div>
+                <div className="historical-trades-container">{historicalTrades}</div>
             </div>
         )
     }
