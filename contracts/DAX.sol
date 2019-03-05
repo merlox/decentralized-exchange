@@ -58,7 +58,7 @@ contract DAX {
     /// @notice To create a market order given a token pair, type of order, amount of tokens to trade and the price per token. If the type is buy, the price will determine how many _secondSymbol tokens you are willing to pay for each _firstSymbol up until your _quantity or better if there are more profitable prices. If the type if sell, the price will determine how many _secondSymbol tokens you get for each _firstSymbol
     function limitOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity, uint256 _pricePerToken) public {}
 
-    /// @notice To extract missing tokens from users that executed the wrong transfer function to this contract by transfering the tokens to the owner to manage it
+    /// @notice To extract missing tokens from users that executed the wrong transfer function to this contract by transferring the tokens to the owner to manage it
     /// @param _token The token address to extract
     function extractToken(address _token) public onlyOwner {
         IERC20 token = IERC20(_token);
