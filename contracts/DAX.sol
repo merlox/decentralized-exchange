@@ -26,15 +26,28 @@ interface IERC20 {
 }
 
 contract DAX {
+    enum TradeState = {OPEN, CLOSED};
+
+    struct Trade {
+        uint256 id;
+        bytes32 type;
+        bytes32 firstSymbol;
+        bytes32 secondSymbol;
+        uint256 quantity;
+        uint256 price;
+        TradeState state;
+    }
+
     address public owner;
     address[] public whitelistedTokens;
     bytes32[] public whitelistedTokenSymbols;
 
     // Token address => isWhitelisted or not
     mapping(address => bool) public isTokenWhitelisted;
+    mapping(bytes32 => bool) public isTokenSymbolWhitelisted;
 
-    // A token symbol => an array of tradable tokens for it. For instance: ETH => [BAT, HYDRO, EXP].
-    mapping(bytes32 => bytes32[]) public tokenPairs;
+    // A token symbol pair made of ['FIRST', 'SECOND'] => doesExist or not
+    mapping(bytes32[2] => bool) public isPairValid;
 
     modifier onlyOwner {
         require(msg.sender == owner, 'The sender must be the owner for this function');
@@ -50,15 +63,37 @@ contract DAX {
     }
 
     /// @notice To whitelist a token so that is tradable in the exchange
+    /// @dev If the transaction reverts, it could be because of the quantity of token pairs, try reducing the number and breaking the transaction into several pieces
+    /// @param _symbol The symbol of the token
     /// @param _token The token to whitelist
-    /// @param _tokenPair The token pairs to whitelist for this new token
-    function whitelistToken(address _token, bytes32[] memory _tokenPairs) public onlyOwner {}
+    /// @param _tokenPair The token pairs to whitelist for this new token, for instance: ['ETH', 'BAT', 'HYDRO'] which will be converted to ['NEW', 'ETH'], ['NEW', 'BAT'] and ['NEW', 'HYDRO']
+    function whitelistToken(bytes32 _symbol, address _token, bytes32[] memory _tokenPairs) public onlyOwner {
+        require(_token != address(0), 'You must specify the token address to whitelist');
+
+        // Only whitelist those that are new, otherwise just continue adding token pairs below
+        if(!isTokenWhitelisted[_token]) {
+            isTokenWhitelisted[_token] = true;
+            isTokenSymbolWhitelisted[_symbol] = true;
+            whitelistedTokens.push(_token);
+            whitelistedTokenSymbols.push(_symbol);
+        }
+
+        // Add all the new token pairs
+        for(uint256 i = 0; i < _tokenPairs.length; i++) {
+            bytes32[2] memory currentPair = [_symbol, _tokenPairs[i]];
+            isPairValid[currentPair] = true;
+        }
+    }
 
     /// @notice To create a market order at the most profitable price given a token pair, type of order (buy or sell) and the amount of tokens to trade
     function marketOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity) public {}
 
     /// @notice To create a market order given a token pair, type of order, amount of tokens to trade and the price per token. If the type is buy, the price will determine how many _secondSymbol tokens you are willing to pay for each _firstSymbol up until your _quantity or better if there are more profitable prices. If the type if sell, the price will determine how many _secondSymbol tokens you get for each _firstSymbol
-    function limitOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity, uint256 _pricePerToken) public {}
+    function limitOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity, uint256 _pricePerToken) public {
+        require(isTokenSymbolWhitelisted[_firstSymbol], 'The first symbol must be whitelisted to trade with it');
+        require( isTokenSymbolWhitelisted[_secondSymbol], 'The second symbol must be whitelisted to trade with it');
+
+    }
 
     /// @notice To extract missing tokens from users that executed the wrong transfer function to this contract by transferring the tokens to the owner to manage it
     /// @param _token The token address to extract
