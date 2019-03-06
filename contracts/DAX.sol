@@ -52,6 +52,7 @@ contract DAX {
     mapping(address => bool) public isTokenWhitelisted;
     mapping(bytes32 => bool) public isTokenSymbolWhitelisted;
     mapping(bytes32[2] => bool) public isPairValid; // A token symbol pair made of ['FIRST', 'SECOND'] => doesExist or not
+    mapping(bytes32 => address) public tokenAddressBySymbol; // Symbol => address of the token
     mapping(bytes32 => uint256) public marketPriceBuyOrderId; // Symbol name => lowest price buy Id
     mapping(bytes32 => uint256) public marketPriceSellOrderId; // Symbol name => highest price sell Id
     mapping(uint256 => Order) public orderById; // Id => trade object
@@ -105,6 +106,7 @@ contract DAX {
     /// @param _tokenPair The token pairs to whitelist for this new token, for instance: ['ETH', 'BAT', 'HYDRO'] which will be converted to ['NEW', 'ETH'], ['NEW', 'BAT'] and ['NEW', 'HYDRO']
     function whitelistToken(bytes32 _symbol, address _token, bytes32[] memory _tokenPairs) public onlyOwner {
         require(_token != address(0), 'You must specify the token address to whitelist');
+        require(IERC20(_token).totalSupply() > 0, 'The token address specified is not a valid ERC20 token');
 
         // Only whitelist those that are new, otherwise just continue adding token pairs below
         if(!isTokenWhitelisted[_token]) {
@@ -112,9 +114,10 @@ contract DAX {
             isTokenSymbolWhitelisted[_symbol] = true;
             whitelistedTokens.push(_token);
             whitelistedTokenSymbols.push(_symbol);
+            tokenAddressBySymbol[_symbol] = _token;
         }
 
-        // Add all the new token pairs
+        // Add all the new token pairs if it's already existing
         for(uint256 i = 0; i < _tokenPairs.length; i++) {
             bytes32[2] memory currentPair = [_symbol, _tokenPairs[i]];
             isPairValid[currentPair] = true;
@@ -132,7 +135,7 @@ contract DAX {
         require(isTokenSymbolWhitelisted[_secondSymbol], 'The second symbol must be whitelisted to trade with it');
         require(escrowByUserAddress[msg.sender] != address(0), 'You must deposit some tokens before creating orders, use depositToken()');
 
-        address userEscrow =
+        address userEscrow = escrowByUserAddress[msg.sender];
 
         Order myOrder = Order(tradeIdCounter, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
         if(_type == 'buy') {
