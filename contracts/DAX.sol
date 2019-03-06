@@ -46,6 +46,7 @@ contract DAX {
     address public owner;
     address[] public whitelistedTokens;
     bytes32[] public whitelistedTokenSymbols;
+    address[] payable public users;
 
     // Token address => isWhitelisted or not
     mapping(address => bool) public isTokenWhitelisted;
@@ -54,18 +55,47 @@ contract DAX {
     mapping(bytes32 => uint256) public marketPriceBuyOrderId; // Symbol name => lowest price buy Id
     mapping(bytes32 => uint256) public marketPriceSellOrderId; // Symbol name => highest price sell Id
     mapping(uint256 => Order) public orderById; // Id => trade object
+    mapping(address => address) public escrowByUserAddress; // User address => escrow contract address
 
     modifier onlyOwner {
         require(msg.sender == owner, 'The sender must be the owner for this function');
         _;
     }
 
-    function () external {
-        revert();
+    /// @notice Users should sent ether to this contract to increase their balance
+    function () external payable {
+        depositEther();
     }
 
     constructor () public {
         owner = msg.sender;
+    }
+
+    /// @notice To store tokens inside the escrow contract associated with the user accounts as long as the users made an approval beforehand
+    /// @dev It will revert is the user doesn't approve tokens beforehand to this contract
+    /// @param _token The token address
+    /// @param _amount The quantity to deposit to the escrow contracc
+    function depositTokens(address _token, uint256 _amount) public {
+        require(_token != address(0), 'You must specify the token address');
+        require(_amount > 0, 'You must send some tokens with this deposit function');
+        require(IERC20(_token).allowance(msg.sender, address(this)) >= _amount, 'You must approve() the quantity of tokens that you want to deposit first');
+        if(escrowByUserAddress[msg.sender] == address(0)) {
+            Escrow newEscrow = new Escrow(address(this));
+            escrowByUserAddress[msg.sender] = address(newEscrow);
+            users.push(msg.sender);
+        }
+        IERC20(_token).transfer(escrowByUserAddress[msg.sender], msg.value);
+    }
+
+    /// @notice To store ether in the escrow contract associated with the user
+    function depositEther() public payable {
+        require(msg.value > 0, 'You must set some ether when depositing with this function');
+        if(escrowByUserAddress[msg.sender] == address(0)) {
+            Escrow newEscrow = new Escrow(address(this));
+            escrowByUserAddress[msg.sender] = address(newEscrow);
+            users.push(msg.sender);
+        }
+        escrowByUserAddress[msg.sender].transfer(msg.value);
     }
 
     /// @notice To whitelist a token so that is tradable in the exchange
@@ -92,12 +122,17 @@ contract DAX {
     }
 
     /// @notice To create a market order at the most profitable price given a token pair, type of order (buy or sell) and the amount of tokens to trade
-    function marketOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity) public {}
+    function marketOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity) public {
+
+    }
 
     /// @notice To create a market order given a token pair, type of order, amount of tokens to trade and the price per token. If the type is buy, the price will determine how many _secondSymbol tokens you are willing to pay for each _firstSymbol up until your _quantity or better if there are more profitable prices. If the type if sell, the price will determine how many _secondSymbol tokens you get for each _firstSymbol
     function limitOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity, uint256 _pricePerToken) public {
         require(isTokenSymbolWhitelisted[_firstSymbol], 'The first symbol must be whitelisted to trade with it');
         require(isTokenSymbolWhitelisted[_secondSymbol], 'The second symbol must be whitelisted to trade with it');
+        require(escrowByUserAddress[msg.sender] != address(0), 'You must deposit some tokens before creating orders, use depositToken()');
+
+        address userEscrow =
 
         Order myOrder = Order(tradeIdCounter, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
         if(_type == 'buy') {
