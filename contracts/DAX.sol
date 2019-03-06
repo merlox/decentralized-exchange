@@ -127,10 +127,9 @@ contract DAX {
     /// @notice To create a market order by filling one or more existing limit orders at the most profitable price given a token pair, type of order (buy or sell) and the amount of tokens to trade, the _quantity is how many _firstSymbol tokens you want to buy if it's a buy order or how many _firstSymbol tokens you want to sell at market price
     function marketOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity) public {
         // Fills the latest market order
+        
 
-        // Updates the market order
-
-        // Creates a limit order if there are tokens remaining
+        // Creates a limit order if there are tokens remaining after all the orders
     }
 
     /// @notice To create a market order given a token pair, type of order, amount of tokens to trade and the price per token. If the type is buy, the price will determine how many _secondSymbol tokens you are willing to pay for each _firstSymbol up until your _quantity or better if there are more profitable prices. If the type if sell, the price will determine how many _secondSymbol tokens you get for each _firstSymbol
@@ -151,12 +150,28 @@ contract DAX {
             require(IERC20(secondSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough second token funds in your escrow contract to create this buy order');
 
             buyOrders.push(myOrder);
-            sortArray
+
+            // Sort existing orders by price the most efficient way possible, we could optimize even more by creating a buy array for each token
+            Order[] memory temporarySortedOrders;
+            uint256[] memory sortedIds = sortIdsByPrices('buy');
+            for(uint256 i = 0; i < sortedIds.length; i++) {
+                temporarySortedOrders[i] = orderById[sortedIds[i]];
+            }
+            buyOrders = temporarySortedOrders;
         } else {
             // Check that the user has enough of the first symbol if he wants to sell it for the second symbol
             require(IERC20(firstSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough first token funds in your escrow contract to create this sell order');
 
+            // Add the new order
             sellOrders.push(myOrder);
+
+            // Sort existing orders by price the most efficient way possible, we could optimize even more by creating a sell array for each token
+            Order[] memory temporarySortedOrders;
+            uint256[] memory sortedIds = sortIdsByPrices('sell');
+            for(uint256 i = 0; i < sortedIds.length; i++) {
+                temporarySortedOrders[i] = orderById[sortedIds[i]];
+            }
+            sellOrders = temporarySortedOrders;
         }
         orderById[orderIdCounter] = myOrder;
         orderIdCounter += 1;
