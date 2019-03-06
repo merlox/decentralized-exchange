@@ -172,7 +172,7 @@ contract DAX {
     /// @notice Sorts the selected array of Orders by price from lower to higher if it's a buy order or from highest to lowest if it's a sell order
     /// @param _type The type of order either 'sell' or 'buy'
     /// @return uint256[] Returns the sorted ids
-    function sortIdPrices(bytes32 _type) public view returns (uint256[] memory) {
+    function sortIdsByPrices(bytes32 _type) public view returns (uint256[] memory) {
             Order[] memory orders;
             if(_type == 'sell') orders = sellOrders;
             else orders = buyOrders;
