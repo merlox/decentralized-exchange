@@ -26,18 +26,23 @@ interface IERC20 {
 }
 
 contract DAX {
-    enum TradeState = {OPEN, CLOSED};
+    enum OrderState = {OPEN, CLOSED};
 
-    struct Trade {
+    struct Order {
         uint256 id;
         bytes32 type;
         bytes32 firstSymbol;
         bytes32 secondSymbol;
         uint256 quantity;
         uint256 price;
+        uint256 timestamp;
         TradeState state;
     }
 
+    Order[] public buyOrders;
+    Order[] public sellOrders;
+    Order[] public closedOrders;
+    uint256 public orderIdCounter;
     address public owner;
     address[] public whitelistedTokens;
     bytes32[] public whitelistedTokenSymbols;
@@ -45,9 +50,10 @@ contract DAX {
     // Token address => isWhitelisted or not
     mapping(address => bool) public isTokenWhitelisted;
     mapping(bytes32 => bool) public isTokenSymbolWhitelisted;
-
-    // A token symbol pair made of ['FIRST', 'SECOND'] => doesExist or not
-    mapping(bytes32[2] => bool) public isPairValid;
+    mapping(bytes32[2] => bool) public isPairValid; // A token symbol pair made of ['FIRST', 'SECOND'] => doesExist or not
+    mapping(bytes32 => uint256) public marketPriceBuyOrderId; // Symbol name => lowest price buy Id
+    mapping(bytes32 => uint256) public marketPriceSellOrderId; // Symbol name => highest price sell Id
+    mapping(uint256 => Order) public orderById; // Id => trade object
 
     modifier onlyOwner {
         require(msg.sender == owner, 'The sender must be the owner for this function');
@@ -91,7 +97,33 @@ contract DAX {
     /// @notice To create a market order given a token pair, type of order, amount of tokens to trade and the price per token. If the type is buy, the price will determine how many _secondSymbol tokens you are willing to pay for each _firstSymbol up until your _quantity or better if there are more profitable prices. If the type if sell, the price will determine how many _secondSymbol tokens you get for each _firstSymbol
     function limitOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity, uint256 _pricePerToken) public {
         require(isTokenSymbolWhitelisted[_firstSymbol], 'The first symbol must be whitelisted to trade with it');
-        require( isTokenSymbolWhitelisted[_secondSymbol], 'The second symbol must be whitelisted to trade with it');
+        require(isTokenSymbolWhitelisted[_secondSymbol], 'The second symbol must be whitelisted to trade with it');
+
+        Order myOrder = Order(tradeIdCounter, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
+        if(_type == 'buy') {
+            buyOrders.push(myOrder);
+
+            // If this order is more profitable to the buyers than the current market order, update it
+            Order currentBuyMarketOrder = orderById[marketPriceBuyOrderId[_firstSymbol]];
+            if(currentMarketOrder.price > _pricePerToken) {
+                marketPriceBuyOrderId[_firstSymbol] =
+            }
+        } else {
+            sellOrders.push(myOrder);
+        }
+        orderById[orderIdCounter] = myOrder;
+
+
+        mapping(bytes32 => uint256) public marketPriceBuyOrderId; // Symbol name => lowest price buy Id
+        mapping(bytes32 => uint256) public marketPriceSellOrderId; // Symbol name => highest price sell Id
+        mapping(uint256 => Order) public orderById; // Id => trade object
+
+
+        orderIdCounter += 1;
+    }
+
+    /// @notice To buy or sell an existing order to fill it at the price set by the order
+    function fillOrder() public {
 
     }
 
