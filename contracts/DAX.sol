@@ -145,29 +145,18 @@ contract DAX {
         require(isTokenSymbolWhitelisted[_secondSymbol], 'The second symbol must be whitelisted to trade with it');
         require(userEscrow != address(0), 'You must deposit some tokens before creating orders, use depositToken()');
 
-        Order myOrder = Order(tradeIdCounter, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
+        Order memory myOrder = Order(tradeIdCounter, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
         if(_type == 'buy') {
             // Check that the user has enough of the second symbol if he wants to buy the first symbol at that price
             require(IERC20(secondSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough second token funds in your escrow contract to create this buy order');
 
             buyOrders.push(myOrder);
-
-            // If this order is more profitable to the sellers than the current market order, update it
-            Order currentBuyMarketOrder = orderById[marketPriceBuyOrderId[_firstSymbol]];
-            if(currentBuyMarketOrder.price > _pricePerToken) {
-                marketPriceBuyOrderId[_firstSymbol] = orderIdCounter;
-            }
+            sortArray
         } else {
             // Check that the user has enough of the first symbol if he wants to sell it for the second symbol
             require(IERC20(firstSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough first token funds in your escrow contract to create this sell order');
 
             sellOrders.push(myOrder);
-
-            // If this order is more profitable to the buyers than the current market order, update it
-            Order currentSellMarketOrder = orderById[marketPriceSellOrderId[_firstSymbol]];
-            if(currentSellMarketOrder.price > _pricePerToken) {
-                marketPriceSellOrderId[_firstSymbol] = orderIdCounter;
-            }
         }
         orderById[orderIdCounter] = myOrder;
         orderIdCounter += 1;
@@ -180,20 +169,34 @@ contract DAX {
         token.transfer(owner, token.balanceOf(address(this)));
     }
 
-    /// @notice Sorts an array of integers and returns the sorted array, doesn't consume any gas because it's pure and pure as well as view functions use the local node without having to broadcast the transaction, thus they are free
-    /// @param arr The array to sort
-    /// @return uint256[] Returns the sorted array
-    function sortArray(uint256[] memory arr) public pure returns (uint256[] memory) {
-        uint256 length = arr.length;
-        for(uint i = 0; i < length; i++) {
-            for(uint j = i+1; j < length; j++) {
-                if(arr[i] > arr[j]) {
-                    uint256 temporary = arr[i];
-                    arr[i] = arr[j];
-                    arr[j] = temporary;
+    /// @notice Sorts the selected array of Orders by price from lower to higher if it's a buy order or from highest to lowest if it's a sell order
+    /// @param _type The type of order either 'sell' or 'buy'
+    /// @return uint256[] Returns the sorted ids
+    function sortIdPrices(bytes32 _type) public view returns (uint256[] memory) {
+            Order[] memory orders;
+            if(_type == 'sell') orders = sellOrders;
+            else orders = buyOrders;
+
+            uint256 length = orders.length;
+            uint256[] memory orderedIds;
+            for(uint i = 0; i < length; i++) {
+                for(uint j = i+1; j < length; j++) {
+                    // If it's a buy order, sort from lowest to highest since we want the lowest prices first
+                    if(_type == 'buy' && orders[i].price > orders[j].price) {
+                        Order memory temporaryOrder = orders[i];
+                        orders[i] = orders[j];
+                        orders[j] = temporaryOrder;
+                    }
+                    // If it's a sell order, sort from highest to lowest since we want the highest sell prices first
+                    if(_type == 'sell' && orders[i].price < orders[j].price) {
+                        Order memory temporaryOrder = orders[i];
+                        orders[i] = orders[j];
+                        orders[j] = temporaryOrder;
+                    }
                 }
+                orderedIds[i] = orders[i].id;
             }
+
+            return orderedIds;
         }
-        return arr;
-    }
 }
