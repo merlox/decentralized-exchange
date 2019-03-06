@@ -124,9 +124,13 @@ contract DAX {
         }
     }
 
-    /// @notice To create a market order at the most profitable price given a token pair, type of order (buy or sell) and the amount of tokens to trade, the _quantity is how many _firstSymbol tokens you want to buy if it's a buy order or how many _firstSymbol tokens you want to sell at market price
+    /// @notice To create a market order by filling one or more existing limit orders at the most profitable price given a token pair, type of order (buy or sell) and the amount of tokens to trade, the _quantity is how many _firstSymbol tokens you want to buy if it's a buy order or how many _firstSymbol tokens you want to sell at market price
     function marketOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity) public {
-        
+        // Fills the latest market order
+
+        // Updates the market order
+
+        // Creates a limit order if there are tokens remaining
     }
 
     /// @notice To create a market order given a token pair, type of order, amount of tokens to trade and the price per token. If the type is buy, the price will determine how many _secondSymbol tokens you are willing to pay for each _firstSymbol up until your _quantity or better if there are more profitable prices. If the type if sell, the price will determine how many _secondSymbol tokens you get for each _firstSymbol
@@ -169,15 +173,27 @@ contract DAX {
         orderIdCounter += 1;
     }
 
-    /// @notice To buy or sell an existing order to fill it at the price set by the order
-    function fillOrder() public {
-
-    }
-
     /// @notice To extract missing tokens from users that executed the wrong transfer function to this contract by transferring the tokens to the owner to manage it
     /// @param _token The token address to extract
     function extractToken(address _token) public onlyOwner {
         IERC20 token = IERC20(_token);
         token.transfer(owner, token.balanceOf(address(this)));
+    }
+
+    /// @notice Sorts an array of integers and returns the sorted array, doesn't consume any gas because it's pure and pure as well as view functions use the local node without having to broadcast the transaction, thus they are free
+    /// @param arr The array to sort
+    /// @return uint256[] Returns the sorted array
+    function sortArray(uint256[] memory arr) public pure returns (uint256[] memory) {
+        uint256 length = arr.length;
+        for(uint i = 0; i < length; i++) {
+            for(uint j = i+1; j < length; j++) {
+                if(arr[i] > arr[j]) {
+                    uint256 temporary = arr[i];
+                    arr[i] = arr[j];
+                    arr[j] = temporary;
+                }
+            }
+        }
+        return arr;
     }
 }
