@@ -103,22 +103,21 @@ contract DAX {
         if(_type == 'buy') {
             buyOrders.push(myOrder);
 
-            // If this order is more profitable to the buyers than the current market order, update it
+            // If this order is more profitable to the sellers than the current market order, update it
             Order currentBuyMarketOrder = orderById[marketPriceBuyOrderId[_firstSymbol]];
-            if(currentMarketOrder.price > _pricePerToken) {
-                marketPriceBuyOrderId[_firstSymbol] =
+            if(currentBuyMarketOrder.price > _pricePerToken) {
+                marketPriceBuyOrderId[_firstSymbol] = orderIdCounter;
             }
         } else {
             sellOrders.push(myOrder);
+
+            // If this order is more profitable to the buyers than the current market order, update it
+            Order currentSellMarketOrder = orderById[marketPriceSellOrderId[_firstSymbol]];
+            if(currentSellMarketOrder.price > _pricePerToken) {
+                marketPriceSellOrderId[_firstSymbol] = orderIdCounter;
+            }
         }
         orderById[orderIdCounter] = myOrder;
-
-
-        mapping(bytes32 => uint256) public marketPriceBuyOrderId; // Symbol name => lowest price buy Id
-        mapping(bytes32 => uint256) public marketPriceSellOrderId; // Symbol name => highest price sell Id
-        mapping(uint256 => Order) public orderById; // Id => trade object
-
-
         orderIdCounter += 1;
     }
 
