@@ -124,21 +124,28 @@ contract DAX {
         }
     }
 
-    /// @notice To create a market order at the most profitable price given a token pair, type of order (buy or sell) and the amount of tokens to trade
+    /// @notice To create a market order at the most profitable price given a token pair, type of order (buy or sell) and the amount of tokens to trade, the _quantity is how many _firstSymbol tokens you want to buy if it's a buy order or how many _firstSymbol tokens you want to sell at market price
     function marketOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity) public {
-
+        
     }
 
     /// @notice To create a market order given a token pair, type of order, amount of tokens to trade and the price per token. If the type is buy, the price will determine how many _secondSymbol tokens you are willing to pay for each _firstSymbol up until your _quantity or better if there are more profitable prices. If the type if sell, the price will determine how many _secondSymbol tokens you get for each _firstSymbol
     function limitOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity, uint256 _pricePerToken) public {
+        address userEscrow = escrowByUserAddress[msg.sender];
+        address firstSymbolAddress = tokenAddressBySymbol[_firstSymbol];
+        address secondSymbolAddress = tokenAddressBySymbol[_secondSymbol];
+
+        require(firstSymbolAddress != address(0), 'The first symbol is an invalid token address');
+        require(secondSymbolAddress != address(0), 'The second symbol is an invalid token address');
         require(isTokenSymbolWhitelisted[_firstSymbol], 'The first symbol must be whitelisted to trade with it');
         require(isTokenSymbolWhitelisted[_secondSymbol], 'The second symbol must be whitelisted to trade with it');
-        require(escrowByUserAddress[msg.sender] != address(0), 'You must deposit some tokens before creating orders, use depositToken()');
-
-        address userEscrow = escrowByUserAddress[msg.sender];
+        require(userEscrow != address(0), 'You must deposit some tokens before creating orders, use depositToken()');
 
         Order myOrder = Order(tradeIdCounter, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
         if(_type == 'buy') {
+            // Check that the user has enough of the second symbol if he wants to buy the first symbol at that price
+            require(IERC20(secondSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough second token funds in your escrow contract to create this buy order');
+
             buyOrders.push(myOrder);
 
             // If this order is more profitable to the sellers than the current market order, update it
@@ -147,6 +154,9 @@ contract DAX {
                 marketPriceBuyOrderId[_firstSymbol] = orderIdCounter;
             }
         } else {
+            // Check that the user has enough of the first symbol if he wants to sell it for the second symbol
+            require(IERC20(firstSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough first token funds in your escrow contract to create this sell order');
+
             sellOrders.push(myOrder);
 
             // If this order is more profitable to the buyers than the current market order, update it
