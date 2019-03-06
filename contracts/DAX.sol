@@ -36,7 +36,7 @@ contract DAX {
         uint256 quantity;
         uint256 price;
         uint256 timestamp;
-        TradeState state;
+        OrderState state;
     }
 
     Order[] public buyOrders;
@@ -126,8 +126,48 @@ contract DAX {
 
     /// @notice To create a market order by filling one or more existing limit orders at the most profitable price given a token pair, type of order (buy or sell) and the amount of tokens to trade, the _quantity is how many _firstSymbol tokens you want to buy if it's a buy order or how many _firstSymbol tokens you want to sell at market price
     function marketOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity) public {
-        // Fills the latest market order
-        
+        // Fills the latest market orders up until the _quantity is reached
+        Order[] memory ordersToFill;
+        uint256[] memory quantitiesToFillPerOrder;
+        uint256 currentQuantity = 0;
+        if(_type == 'buy') {
+            // Loop through all the sell orders until we fill the quantity
+            for(uint256 i = 0; i < sellOrders.length; i++) {
+                ordersToFill[i] = sellOrders[i];
+                if((currentQuantity + sellOrders[i].quantity) > _quantity) {
+                    quantitiesToFillPerOrder[i] =  _quantity - currentQuantity;
+                    break;
+                }
+                currentQuantity += sellOrders[i].quantity;
+                quantitiesToFillPerOrder[i] = sellOrders[i].quantity;
+            }
+        } else {
+            for(uint256 i = 0; i < buyOrders.length; i++) {
+                ordersToFill[i] = buyOrders[i];
+                if((currentQuantity + buyOrders[i].quantity) > _quantity) {
+                    quantitiesToFillPerOrder[i] =  _quantity - currentQuantity;
+                    break;
+                }
+                currentQuantity += buyOrders[i].quantity;
+                quantitiesToFillPerOrder[i] = buyOrders[i].quantity;
+            }
+        }
+
+        // Close and fill orders
+        for(uint256 i = 0; i < ordersToFill.length; i++) {
+            if(quantitiesToFillPerOrder[i] == ordersToFill[i].quantity) {
+                ordersToFill[i].state = OrderState.CLOSED;
+                closedOrders.push(ordersToFill[i]);
+            } else {
+                ordersToFill[i].quantity -= quantitiesToFillPerOrder[i];
+            }
+        }
+
+        // Update the orders to fill to mark them as filled and update those that are partially filled
+        Order[] public buyOrders;
+        Order[] public sellOrders;
+        Order[] public closedOrders;
+        mapping(uint256 => Order) public orderById;
 
         // Creates a limit order if there are tokens remaining after all the orders
     }
