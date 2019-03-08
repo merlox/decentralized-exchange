@@ -29,6 +29,13 @@ contract Escrow {
         owner = _owner;
     }
 
+    /// @notice To transfer tokens to another address, usually the buyer or seller of an existing order
+    function transferTokens(address _token, address _to, uint256 _amount) public onlyOwner {
+        require(_token != address(0), 'The token address must be set');
+        require(_to != address(0), 'The receiver address must be set');
+        IERC20(_token).transfer(_to, _amount);
+    }
+
     /// @notice To receive the funds from this contract to the owner of it
     /// @param _token The address of the token to extract
     /// @param _amount The number of tokens to extract

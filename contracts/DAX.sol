@@ -30,6 +30,7 @@ contract DAX {
 
     struct Order {
         uint256 id;
+        address owner;
         bytes32 type;
         bytes32 firstSymbol;
         bytes32 secondSymbol;
@@ -53,8 +54,6 @@ contract DAX {
     mapping(bytes32 => bool) public isTokenSymbolWhitelisted;
     mapping(bytes32[2] => bool) public isPairValid; // A token symbol pair made of ['FIRST', 'SECOND'] => doesExist or not
     mapping(bytes32 => address) public tokenAddressBySymbol; // Symbol => address of the token
-    mapping(bytes32 => uint256) public marketPriceBuyOrderId; // Symbol name => lowest price buy Id
-    mapping(bytes32 => uint256) public marketPriceSellOrderId; // Symbol name => highest price sell Id
     mapping(uint256 => Order) public orderById; // Id => trade object
     mapping(address => address) public escrowByUserAddress; // User address => escrow contract address
 
@@ -155,21 +154,26 @@ contract DAX {
 
         // Close and fill orders
         for(uint256 i = 0; i < ordersToFill.length; i++) {
-            if(quantitiesToFillPerOrder[i] == ordersToFill[i].quantity) {
-                ordersToFill[i].state = OrderState.CLOSED;
+            Order myOrder = ordersToFill[i];
+            // If we want to fill the entire order, do this
+            if(quantitiesToFillPerOrder[i] == myOrder.quantity) {
+                if(_type == 'buy') {
+                    // If the limit order is a buy order, send the firstSymbol to the creator of the limit order which is the buyer
+                    Escrow(msg.sender).transferTokens(_secondSymbol, myOrder.owner, quantitiesToFillPerOrder[i]);
+                    Escrow(myOrder.owner).transferTokens(_firstSymbol, msg.sender, myOrder.quantity * myOrder.price);
+                } else {
+                    // If this is a buy market order or a sell limit order for the opposite, send firstSymbol to the second user
+                    Escrow(msg.sender).transferTokens(_firstSymbol, myOrder.owner, quantitiesToFillPerOrder[i]);
+                    Escrow(myOrder.owner).transferTokens(_secondSymbol, msg.sender, myOrder.quantity * myOrder.price)
+                }
+                myOrder.state = OrderState.CLOSED;
                 closedOrders.push(ordersToFill[i]);
+                orderById[myOrder.id] = myOrder;
             } else {
-                ordersToFill[i].quantity -= quantitiesToFillPerOrder[i];
+                myOrder.quantity -= quantitiesToFillPerOrder[i];
+                orderById[myOrder.id] = myOrder;
             }
         }
-
-        // Update the orders to fill to mark them as filled and update those that are partially filled
-        Order[] public buyOrders;
-        Order[] public sellOrders;
-        Order[] public closedOrders;
-        mapping(uint256 => Order) public orderById;
-
-        // Creates a limit order if there are tokens remaining after all the orders
     }
 
     /// @notice To create a market order given a token pair, type of order, amount of tokens to trade and the price per token. If the type is buy, the price will determine how many _secondSymbol tokens you are willing to pay for each _firstSymbol up until your _quantity or better if there are more profitable prices. If the type if sell, the price will determine how many _secondSymbol tokens you get for each _firstSymbol
@@ -184,7 +188,7 @@ contract DAX {
         require(isTokenSymbolWhitelisted[_secondSymbol], 'The second symbol must be whitelisted to trade with it');
         require(userEscrow != address(0), 'You must deposit some tokens before creating orders, use depositToken()');
 
-        Order memory myOrder = Order(tradeIdCounter, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
+        Order memory myOrder = Order(tradeIdCounter, msg.sender, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
         if(_type == 'buy') {
             // Check that the user has enough of the second symbol if he wants to buy the first symbol at that price
             require(IERC20(secondSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough second token funds in your escrow contract to create this buy order');
