@@ -41,7 +41,7 @@ contract DAX {
     // Token address => isWhitelisted or not
     mapping(address => bool) public isTokenWhitelisted;
     mapping(bytes32 => bool) public isTokenSymbolWhitelisted;
-    mapping(bytes32 => bytes32) public isPairValid; // A token symbol pair made of 'FIRST' => 'SECOND'
+    mapping(bytes32 => bytes32[]) public tokenPairs; // A token symbol pair made of 'FIRST' => 'SECOND'
     mapping(bytes32 => address) public tokenAddressBySymbol; // Symbol => address of the token
     mapping(uint256 => Order) public orderById; // Id => trade object
     mapping(address => address) public escrowByUserAddress; // User address => escrow contract address
@@ -78,10 +78,7 @@ contract DAX {
             tokenAddressBySymbol[_symbol] = _token;
         }
 
-        // Add all the new token pairs if it's already existing
-        for(uint256 i = 0; i < _tokenPairs.length; i++) {
-            isPairValid[_symbol] = _tokenPairs[i];
-        }
+        tokenPairs[_symbol] = _tokenPairs;
     }
 
     /// @notice To store tokens inside the escrow contract associated with the user accounts as long as the users made an approval beforehand
@@ -209,34 +206,39 @@ contract DAX {
     /// @param _type The type of order either 'sell' or 'buy'
     /// @return uint256[] Returns the sorted ids
     function sortIdsByPrices(bytes32 _type) public view returns (uint256[] memory) {
-            Order[] memory orders;
-            if(_type == 'sell') orders = sellOrders;
-            else orders = buyOrders;
+        Order[] memory orders;
+        if(_type == 'sell') orders = sellOrders;
+        else orders = buyOrders;
 
-            uint256 length = orders.length;
-            uint256[] memory orderedIds;
-            uint256 lastId = 0;
-            for(uint i = 0; i < length; i++) {
-                if(orders[i].quantity > 0) {
-                    for(uint j = i+1; j < length; j++) {
-                        // If it's a buy order, sort from lowest to highest since we want the lowest prices first
-                        if(_type == 'buy' && orders[i].price > orders[j].price) {
-                            Order memory temporaryOrder = orders[i];
-                            orders[i] = orders[j];
-                            orders[j] = temporaryOrder;
-                        }
-                        // If it's a sell order, sort from highest to lowest since we want the highest sell prices first
-                        if(_type == 'sell' && orders[i].price < orders[j].price) {
-                            Order memory temporaryOrder = orders[i];
-                            orders[i] = orders[j];
-                            orders[j] = temporaryOrder;
-                        }
+        uint256 length = orders.length;
+        uint256[] memory orderedIds;
+        uint256 lastId = 0;
+        for(uint i = 0; i < length; i++) {
+            if(orders[i].quantity > 0) {
+                for(uint j = i+1; j < length; j++) {
+                    // If it's a buy order, sort from lowest to highest since we want the lowest prices first
+                    if(_type == 'buy' && orders[i].price > orders[j].price) {
+                        Order memory temporaryOrder = orders[i];
+                        orders[i] = orders[j];
+                        orders[j] = temporaryOrder;
                     }
-                    orderedIds[lastId] = orders[i].id;
-                    lastId++;
+                    // If it's a sell order, sort from highest to lowest since we want the highest sell prices first
+                    if(_type == 'sell' && orders[i].price < orders[j].price) {
+                        Order memory temporaryOrder = orders[i];
+                        orders[i] = orders[j];
+                        orders[j] = temporaryOrder;
+                    }
                 }
+                orderedIds[lastId] = orders[i].id;
+                lastId++;
             }
-
-            return orderedIds;
         }
+
+        return orderedIds;
+    }
+
+    /// @notice Returns the token pairs
+    function getTokenPairs(bytes32 _token) public view returns(bytes32[] memory) {
+        return tokenPairs[_token];
+    }
 }

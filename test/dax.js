@@ -13,20 +13,29 @@ contract('DAX', accounts => {
         console.log('Deployed DAX', dax.address)
     })
     it('Should whitelist 2 tokens BAT and HYDRO', async () => {
-        const token = 'TOKEN'
-        const pairs = ['BAT', 'HYDRO']
+        const tokenBytes = fillBytes32WithSpaces('TOKEN')
+        const pairBytes = [fillBytes32WithSpaces('BAT'), fillBytes32WithSpaces('HYDRO')]
 
-        transaction = dax.whitelistToken(token, token.address, pairs)
+        transaction = dax.whitelistToken(tokenBytes, token.address, pairBytes)
         await awaitConfirmation(transaction)
-        const isWhitelisted = dax.isTokenSymbolWhitelisted(fillBytes32WithSpaces(token))
-        console.log('Is whitelisted?', isWhitelisted)
+        const isWhitelisted = await dax.isTokenSymbolWhitelisted(tokenBytes)
+        const validPairs = await dax.getTokenPairs(tokenBytes)
+        console.log('Valid pairs', web3.utils.toUtf8(validPairs[0]), web3.utils.toUtf8(validPairs[1]))
+        assert.ok(isWhitelisted, 'The token must be whitelisted')
     })
 })
 
 function awaitConfirmation(transaction) {
     return new Promise((resolve, reject) => {
         transaction.on('confirmation', number => {
-            if(number == 3) resolve()
+            process.stdout.clearLine()
+            process.stdout.cursorTo(0)
+            if(number == 3) {
+                process.stdout.write('Confirmation ' + number + '\n')
+                resolve()
+            } else {
+                process.stdout.write('Confirmation ' + number)
+            }
         })
     })
 }
