@@ -4,12 +4,15 @@ const ERC20 = artifacts.require('ERC20.sol')
 const emptyBytes = 0x0000000000000000000000000000000000000000
 let dax = {}
 let token = {}
+let hydroToken = {}
 let transaction
 
 contract('DAX', accounts => {
     beforeEach(async () => {
         token = await ERC20.new()
         console.log('Deployed token', token.address)
+        hydroToken = await ERC20.new()
+        console.log('Hydro token deployed', hydroToken.address)
         dax = await DAX.new()
         console.log('Deployed DAX', dax.address)
     })
@@ -21,8 +24,8 @@ contract('DAX', accounts => {
         await awaitConfirmation(transaction)
         const isWhitelisted = await dax.isTokenSymbolWhitelisted(tokenBytes)
         const validPairs = await dax.getTokenPairs(tokenBytes)
-        console.log('Valid pairs', web3.utils.toUtf8(validPairs[0]), web3.utils.toUtf8(validPairs[1]))
         assert.ok(isWhitelisted, 'The token must be whitelisted')
+        assert.equal(pairBytes, validPairs, 'The token pairs added must be valid')
     })
     it('Should deposit tokens correctly and create a valid Escrow contract', async () => {
         const tokenAddress = token.address
@@ -54,6 +57,37 @@ contract('DAX', accounts => {
         await awaitConfirmation(transaction)
 
         assert.equal(parseInt(await token.balanceOf(accounts[0])), initialTokens, 'You must have the same balance as when you started')
+    })
+    it('Should create a limit order succesfully', async () => {
+        const type = fillBytes32WithSpaces('buy')
+        const firstSymbol = fillBytes32WithSpaces('TOKEN')
+        const secondSymbol = fillBytes32WithSpaces('HYDRO')
+        const quantity = 100
+        const pricePerToken = 40
+        const secondSymbolPrice = quantity * pricePerToken
+        const initialHydroTokens = parseInt(await hydroToken.balanceOf(accounts[0]))
+
+        // Whitelist the token first
+        transaction = dax.whitelistToken(firstSymbol, token.address, [secondSymbol])
+        await awaitConfirmation(transaction)
+        const isWhitelisted = await dax.isTokenSymbolWhitelisted(firstSymbol)
+        const validPairs = await dax.getTokenPairs(firstSymbol)
+        assert.ok(isWhitelisted, 'The token must be whitelisted')
+
+        // Deposit the tokens
+        transaction = hydroToken.approve(dax.address, secondSymbolPrice)
+        await awaitConfirmation(transaction)
+        transaction = dax.depositTokens(hydroToken.address, secondSymbolPrice)
+        await awaitConfirmation(transaction)
+        const escrowAddress = await dax.escrowByUserAddress(accounts[0])
+        const balance = parseInt(await hydroToken.balanceOf(escrowAddress))
+        assert.equal(parseInt(await hydroToken.balanceOf(accounts[0])), initialHydroTokens - secondSymbolPrice, 'You must deposit the tokens succesfully first')
+
+        transaction = dax.limitOrder(type, firstSymbol, secondSymbol, quantity, pricePerToken)
+        await awaitConfirmation(transaction)
+        const counter = parseInt(await dax.orderIdCounter())
+
+        assert.ok(counter == 1, 'The counter must increase after a succesful limit order creation')
     })
 })
 

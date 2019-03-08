@@ -65,7 +65,7 @@ contract DAX {
     /// @param _symbol The symbol of the token
     /// @param _token The token to whitelist
     /// @param _tokenPairs The token pairs to whitelist for this new token, for instance: ['ETH', 'BAT', 'HYDRO'] which will be converted to ['NEW', 'ETH'], ['NEW', 'BAT'] and ['NEW', 'HYDRO']
-    function whitelistToken(bytes32 _symbol, address _token, bytes32[] memory _tokenPairs) public onlyOwner {
+    function whitelistToken(bytes32 _symbol, address _token, bytes32[] memory _tokenPairsSymbols, address[] _tokenPairAddresses) public onlyOwner {
         require(_token != address(0), 'You must specify the token address to whitelist');
         require(IERC20(_token).totalSupply() > 0, 'The token address specified is not a valid ERC20 token');
 
@@ -76,6 +76,18 @@ contract DAX {
             whitelistedTokens.push(_token);
             whitelistedTokenSymbols.push(_symbol);
             tokenAddressBySymbol[_symbol] = _token;
+        }
+
+        for(uint256 i = 0; i < _tokenPairs.length; i++) {
+            address currentToken = _tokenPairs[i]
+            bytes32 currentSymbol = _tokenPairsSymbols[i]
+            if(!isTokenWhitelisted[currentToken]) {
+                isTokenWhitelisted[currentToken] = true;
+                isTokenSymbolWhitelisted[currentSymbol] = true;
+                whitelistedTokens.push(currentToken);
+                whitelistedTokenSymbols.push(currentSymbol);
+                tokenAddressBySymbol[currentSymbol] = currentToken;
+            }
         }
 
         tokenPairs[_symbol] = _tokenPairs;
@@ -179,8 +191,8 @@ contract DAX {
             buyOrders.push(myOrder);
 
             // Sort existing orders by price the most efficient way possible, we could optimize even more by creating a buy array for each token
-            delete buyOrders; // Reset orders
             uint256[] memory sortedIds = sortIdsByPrices('buy');
+            delete buyOrders; // Reset orders
             for(uint256 i = 0; i < sortedIds.length; i++) {
                 buyOrders[i] = orderById[sortedIds[i]];
             }
@@ -192,8 +204,8 @@ contract DAX {
             sellOrders.push(myOrder);
 
             // Sort existing orders by price the most efficient way possible, we could optimize even more by creating a sell array for each token
-            delete sellOrders; // Reset orders
             uint256[] memory sortedIds = sortIdsByPrices('sell');
+            delete sellOrders; // Reset orders
             for(uint256 i = 0; i < sortedIds.length; i++) {
                 sellOrders[i] = orderById[sortedIds[i]];
             }
