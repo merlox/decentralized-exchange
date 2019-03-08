@@ -41,17 +41,19 @@ contract('DAX', accounts => {
     it('Should extract tokens successfully after a deposit', async () => {
         const tokenAddress = token.address
         const amount = 100
-
-        console.log('User balance before', parseInt(await token.balanceOf(accounts[0])))
+        const initialTokens = parseInt(await token.balanceOf(accounts[0]))
 
         transaction = token.approve(dax.address, amount)
         await awaitConfirmation(transaction)
         transaction = dax.depositTokens(tokenAddress, amount)
         await awaitConfirmation(transaction)
+
+        assert.equal(parseInt(await token.balanceOf(accounts[0])), initialTokens - 100, 'You must deposit the tokens succesfully first')
+
         transaction = dax.extractTokens(tokenAddress, amount)
         await awaitConfirmation(transaction)
 
-        console.log('User balance after', parseInt(await token.balanceOf(accounts[0])))
+        assert.equal(parseInt(await token.balanceOf(accounts[0])), initialTokens, 'You must have the same balance as when you started')
     })
 })
 

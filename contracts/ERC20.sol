@@ -105,7 +105,7 @@ contract ERC20 is IERC20 {
 
     mapping (address => mapping (address => uint256)) private _allowed;
 
-    uint256 private _totalSupply = 10e18;
+    uint256 private _totalSupply = 10e4;
 
     constructor () public {
         _balances[msg.sender] = _totalSupply;
