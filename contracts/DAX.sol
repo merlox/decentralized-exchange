@@ -14,24 +14,13 @@ pragma solidity ^0.5.4;
 
 import './Escrow.sol';
 
-interface IERC20 {
-    function transfer(address to, uint256 value) external returns (bool);
-    function approve(address spender, uint256 value) external returns (bool);
-    function transferFrom(address from, address to, uint256 value) external returns (bool);
-    function totalSupply() external view returns (uint256);
-    function balanceOf(address who) external view returns (uint256);
-    function allowance(address owner, address spender) external view returns (uint256);
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-}
-
 contract DAX {
-    enum OrderState = {OPEN, CLOSED};
+    enum OrderState {OPEN, CLOSED}
 
     struct Order {
         uint256 id;
         address owner;
-        bytes32 type;
+        bytes32 orderType;
         bytes32 firstSymbol;
         bytes32 secondSymbol;
         uint256 quantity;
@@ -47,12 +36,12 @@ contract DAX {
     address public owner;
     address[] public whitelistedTokens;
     bytes32[] public whitelistedTokenSymbols;
-    address[] payable public users;
+    address[] public users;
 
     // Token address => isWhitelisted or not
     mapping(address => bool) public isTokenWhitelisted;
     mapping(bytes32 => bool) public isTokenSymbolWhitelisted;
-    mapping(bytes32[2] => bool) public isPairValid; // A token symbol pair made of ['FIRST', 'SECOND'] => doesExist or not
+    mapping(bytes32 => bytes32) public isPairValid; // A token symbol pair made of 'FIRST' => 'SECOND'
     mapping(bytes32 => address) public tokenAddressBySymbol; // Symbol => address of the token
     mapping(uint256 => Order) public orderById; // Id => trade object
     mapping(address => address) public escrowByUserAddress; // User address => escrow contract address
@@ -62,9 +51,9 @@ contract DAX {
         _;
     }
 
-    /// @notice Users should sent ether to this contract to increase their balance
-    function () external payable {
-        depositEther();
+    /// @notice Users should not send ether to this contract
+    function () external {
+        revert();
     }
 
     constructor () public {
@@ -84,25 +73,24 @@ contract DAX {
             escrowByUserAddress[msg.sender] = address(newEscrow);
             users.push(msg.sender);
         }
-        IERC20(_token).transfer(escrowByUserAddress[msg.sender], msg.value);
+        IERC20(_token).transfer(escrowByUserAddress[msg.sender], _amount);
     }
 
-    /// @notice To store ether in the escrow contract associated with the user
-    function depositEther() public payable {
-        require(msg.value > 0, 'You must set some ether when depositing with this function');
-        if(escrowByUserAddress[msg.sender] == address(0)) {
-            Escrow newEscrow = new Escrow(address(this));
-            escrowByUserAddress[msg.sender] = address(newEscrow);
-            users.push(msg.sender);
-        }
-        escrowByUserAddress[msg.sender].transfer(msg.value);
+    /// @notice To extract tokens
+    /// @param _token The token address to extract
+    /// @param _amount The amount of tokens to transfer
+    function extractTokens(address _token, uint256 _amount) public {
+        require(_token != address(0), 'You must specify the token address');
+        require(_amount > 0, 'You must send some tokens with this deposit function');
+        IERC20 token = IERC20(_token);
+        Escrow(escrowByUserAddress[msg.sender]).transferTokens(_token, msg.sender, _amount);
     }
 
     /// @notice To whitelist a token so that is tradable in the exchange
     /// @dev If the transaction reverts, it could be because of the quantity of token pairs, try reducing the number and breaking the transaction into several pieces
     /// @param _symbol The symbol of the token
     /// @param _token The token to whitelist
-    /// @param _tokenPair The token pairs to whitelist for this new token, for instance: ['ETH', 'BAT', 'HYDRO'] which will be converted to ['NEW', 'ETH'], ['NEW', 'BAT'] and ['NEW', 'HYDRO']
+    /// @param _tokenPairs The token pairs to whitelist for this new token, for instance: ['ETH', 'BAT', 'HYDRO'] which will be converted to ['NEW', 'ETH'], ['NEW', 'BAT'] and ['NEW', 'HYDRO']
     function whitelistToken(bytes32 _symbol, address _token, bytes32[] memory _tokenPairs) public onlyOwner {
         require(_token != address(0), 'You must specify the token address to whitelist');
         require(IERC20(_token).totalSupply() > 0, 'The token address specified is not a valid ERC20 token');
@@ -118,8 +106,7 @@ contract DAX {
 
         // Add all the new token pairs if it's already existing
         for(uint256 i = 0; i < _tokenPairs.length; i++) {
-            bytes32[2] memory currentPair = [_symbol, _tokenPairs[i]];
-            isPairValid[currentPair] = true;
+            isPairValid[_symbol] = _tokenPairs[i];
         }
     }
 
@@ -154,17 +141,17 @@ contract DAX {
 
         // Close and fill orders
         for(uint256 i = 0; i < ordersToFill.length; i++) {
-            Order myOrder = ordersToFill[i];
+            Order memory myOrder = ordersToFill[i];
             // If we want to fill the entire order, do this
             if(quantitiesToFillPerOrder[i] == myOrder.quantity) {
                 if(_type == 'buy') {
                     // If the limit order is a buy order, send the firstSymbol to the creator of the limit order which is the buyer
-                    Escrow(msg.sender).transferTokens(_secondSymbol, myOrder.owner, quantitiesToFillPerOrder[i]);
-                    Escrow(myOrder.owner).transferTokens(_firstSymbol, msg.sender, myOrder.quantity * myOrder.price);
+                    Escrow(msg.sender).transferTokens(tokenAddressBySymbol[_secondSymbol], myOrder.owner, quantitiesToFillPerOrder[i]);
+                    Escrow(myOrder.owner).transferTokens(tokenAddressBySymbol[_firstSymbol], msg.sender, myOrder.quantity * myOrder.price);
                 } else {
                     // If this is a buy market order or a sell limit order for the opposite, send firstSymbol to the second user
-                    Escrow(msg.sender).transferTokens(_firstSymbol, myOrder.owner, quantitiesToFillPerOrder[i]);
-                    Escrow(myOrder.owner).transferTokens(_secondSymbol, msg.sender, myOrder.quantity * myOrder.price)
+                    Escrow(msg.sender).transferTokens(tokenAddressBySymbol[_firstSymbol], myOrder.owner, quantitiesToFillPerOrder[i]);
+                    Escrow(myOrder.owner).transferTokens(tokenAddressBySymbol[_secondSymbol], msg.sender, myOrder.quantity * myOrder.price);
                 }
                 myOrder.state = OrderState.CLOSED;
                 closedOrders.push(ordersToFill[i]);
@@ -188,7 +175,7 @@ contract DAX {
         require(isTokenSymbolWhitelisted[_secondSymbol], 'The second symbol must be whitelisted to trade with it');
         require(userEscrow != address(0), 'You must deposit some tokens before creating orders, use depositToken()');
 
-        Order memory myOrder = Order(tradeIdCounter, msg.sender, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
+        Order memory myOrder = Order(orderIdCounter, msg.sender, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
         if(_type == 'buy') {
             // Check that the user has enough of the second symbol if he wants to buy the first symbol at that price
             require(IERC20(secondSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough second token funds in your escrow contract to create this buy order');
@@ -219,13 +206,6 @@ contract DAX {
         }
         orderById[orderIdCounter] = myOrder;
         orderIdCounter += 1;
-    }
-
-    /// @notice To extract missing tokens from users that executed the wrong transfer function to this contract by transferring the tokens to the owner to manage it
-    /// @param _token The token address to extract
-    function extractToken(address _token) public onlyOwner {
-        IERC20 token = IERC20(_token);
-        token.transfer(owner, token.balanceOf(address(this)));
     }
 
     /// @notice Sorts the selected array of Orders by price from lower to higher if it's a buy order or from highest to lowest if it's a sell order
