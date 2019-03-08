@@ -23,6 +23,17 @@ contract('DAX', accounts => {
         console.log('Valid pairs', web3.utils.toUtf8(validPairs[0]), web3.utils.toUtf8(validPairs[1]))
         assert.ok(isWhitelisted, 'The token must be whitelisted')
     })
+    it('Should deposit tokens correctly and create a valid Escrow contract', async () => {
+        const tokenAddress = token.address
+        const amount = 100
+
+        transaction = token.approve(dax.address, amount)
+        await awaitConfirmation(transaction)
+        transaction = dax.depositTokens(tokenAddress, amount)
+        await awaitConfirmation(transaction)
+
+        console.log('Escrow address', await dax.escrowByUserAddress(accounts[0]))
+    })
 })
 
 function awaitConfirmation(transaction) {
