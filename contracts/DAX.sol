@@ -82,7 +82,6 @@ contract DAX {
     function extractTokens(address _token, uint256 _amount) public {
         require(_token != address(0), 'You must specify the token address');
         require(_amount > 0, 'You must send some tokens with this deposit function');
-        IERC20 token = IERC20(_token);
         Escrow(escrowByUserAddress[msg.sender]).transferTokens(_token, msg.sender, _amount);
     }
 
