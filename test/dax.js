@@ -38,6 +38,21 @@ contract('DAX', accounts => {
         assert.ok(escrowAddress != emptyBytes, 'The escrow address must be set')
         assert.equal(balance, amount, 'The balance must be equal to the amount of tokens deposited')
     })
+    it('Should extract tokens successfully after a deposit', async () => {
+        const tokenAddress = token.address
+        const amount = 100
+
+        console.log('User balance before', parseInt(await token.balanceOf(accounts[0])))
+
+        transaction = token.approve(dax.address, amount)
+        await awaitConfirmation(transaction)
+        transaction = dax.depositTokens(tokenAddress, amount)
+        await awaitConfirmation(transaction)
+        transaction = dax.extractTokens(tokenAddress, amount)
+        await awaitConfirmation(transaction)
+
+        console.log('User balance after', parseInt(await token.balanceOf(accounts[0])))
+    })
 })
 
 function awaitConfirmation(transaction) {
