@@ -94,7 +94,7 @@ contract DAX {
             escrowByUserAddress[msg.sender] = address(newEscrow);
             users.push(msg.sender);
         }
-        IERC20(_token).transfer(escrowByUserAddress[msg.sender], _amount);
+        IERC20(_token).transferFrom(msg.sender, escrowByUserAddress[msg.sender], _amount);
     }
 
     /// @notice To extract tokens

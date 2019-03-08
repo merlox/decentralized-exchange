@@ -1,6 +1,7 @@
 const assert = require('assert')
 const DAX = artifacts.require('DAX.sol')
 const ERC20 = artifacts.require('ERC20.sol')
+const emptyBytes = 0x0000000000000000000000000000000000000000
 let dax = {}
 let token = {}
 let transaction
@@ -31,8 +32,11 @@ contract('DAX', accounts => {
         await awaitConfirmation(transaction)
         transaction = dax.depositTokens(tokenAddress, amount)
         await awaitConfirmation(transaction)
+        const escrowAddress = await dax.escrowByUserAddress(accounts[0])
+        const balance = parseInt(await token.balanceOf(escrowAddress))
 
-        console.log('Escrow address', await dax.escrowByUserAddress(accounts[0]))
+        assert.ok(escrowAddress != emptyBytes, 'The escrow address must be set')
+        assert.equal(balance, amount, 'The balance must be equal to the amount of tokens deposited')
     })
 })
 
