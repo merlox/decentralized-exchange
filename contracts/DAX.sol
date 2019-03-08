@@ -60,6 +60,30 @@ contract DAX {
         owner = msg.sender;
     }
 
+    /// @notice To whitelist a token so that is tradable in the exchange
+    /// @dev If the transaction reverts, it could be because of the quantity of token pairs, try reducing the number and breaking the transaction into several pieces
+    /// @param _symbol The symbol of the token
+    /// @param _token The token to whitelist
+    /// @param _tokenPairs The token pairs to whitelist for this new token, for instance: ['ETH', 'BAT', 'HYDRO'] which will be converted to ['NEW', 'ETH'], ['NEW', 'BAT'] and ['NEW', 'HYDRO']
+    function whitelistToken(bytes32 _symbol, address _token, bytes32[] memory _tokenPairs) public onlyOwner {
+        require(_token != address(0), 'You must specify the token address to whitelist');
+        require(IERC20(_token).totalSupply() > 0, 'The token address specified is not a valid ERC20 token');
+
+        // Only whitelist those that are new, otherwise just continue adding token pairs below
+        if(!isTokenWhitelisted[_token]) {
+            isTokenWhitelisted[_token] = true;
+            isTokenSymbolWhitelisted[_symbol] = true;
+            whitelistedTokens.push(_token);
+            whitelistedTokenSymbols.push(_symbol);
+            tokenAddressBySymbol[_symbol] = _token;
+        }
+
+        // Add all the new token pairs if it's already existing
+        for(uint256 i = 0; i < _tokenPairs.length; i++) {
+            isPairValid[_symbol] = _tokenPairs[i];
+        }
+    }
+
     /// @notice To store tokens inside the escrow contract associated with the user accounts as long as the users made an approval beforehand
     /// @dev It will revert is the user doesn't approve tokens beforehand to this contract
     /// @param _token The token address
@@ -83,30 +107,6 @@ contract DAX {
         require(_token != address(0), 'You must specify the token address');
         require(_amount > 0, 'You must send some tokens with this deposit function');
         Escrow(escrowByUserAddress[msg.sender]).transferTokens(_token, msg.sender, _amount);
-    }
-
-    /// @notice To whitelist a token so that is tradable in the exchange
-    /// @dev If the transaction reverts, it could be because of the quantity of token pairs, try reducing the number and breaking the transaction into several pieces
-    /// @param _symbol The symbol of the token
-    /// @param _token The token to whitelist
-    /// @param _tokenPairs The token pairs to whitelist for this new token, for instance: ['ETH', 'BAT', 'HYDRO'] which will be converted to ['NEW', 'ETH'], ['NEW', 'BAT'] and ['NEW', 'HYDRO']
-    function whitelistToken(bytes32 _symbol, address _token, bytes32[] memory _tokenPairs) public onlyOwner {
-        require(_token != address(0), 'You must specify the token address to whitelist');
-        require(IERC20(_token).totalSupply() > 0, 'The token address specified is not a valid ERC20 token');
-
-        // Only whitelist those that are new, otherwise just continue adding token pairs below
-        if(!isTokenWhitelisted[_token]) {
-            isTokenWhitelisted[_token] = true;
-            isTokenSymbolWhitelisted[_symbol] = true;
-            whitelistedTokens.push(_token);
-            whitelistedTokenSymbols.push(_symbol);
-            tokenAddressBySymbol[_symbol] = _token;
-        }
-
-        // Add all the new token pairs if it's already existing
-        for(uint256 i = 0; i < _tokenPairs.length; i++) {
-            isPairValid[_symbol] = _tokenPairs[i];
-        }
     }
 
     /// @notice To create a market order by filling one or more existing limit orders at the most profitable price given a token pair, type of order (buy or sell) and the amount of tokens to trade, the _quantity is how many _firstSymbol tokens you want to buy if it's a buy order or how many _firstSymbol tokens you want to sell at market price
