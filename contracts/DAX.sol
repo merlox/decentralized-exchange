@@ -177,8 +177,8 @@ contract DAX {
         address firstSymbolAddress = tokenAddressBySymbol[_firstSymbol];
         address secondSymbolAddress = tokenAddressBySymbol[_secondSymbol];
 
-        require(firstSymbolAddress != address(0), 'The first symbol is an invalid token address');
-        require(secondSymbolAddress != address(0), 'The second symbol is an invalid token address');
+        require(firstSymbolAddress != address(0), 'The first symbol has not been whitelisted');
+        require(secondSymbolAddress != address(0), 'The second symbol has not been whitelisted');
         require(isTokenSymbolWhitelisted[_firstSymbol], 'The first symbol must be whitelisted to trade with it');
         require(isTokenSymbolWhitelisted[_secondSymbol], 'The second symbol must be whitelisted to trade with it');
         require(userEscrow != address(0), 'You must deposit some tokens before creating orders, use depositToken()');
@@ -192,11 +192,11 @@ contract DAX {
 
             // Sort existing orders by price the most efficient way possible, we could optimize even more by creating a buy array for each token
             uint256[] memory sortedIds = sortIdsByPrices('buy');
-            delete buyOrders; // Reset orders
+            /* delete buyOrders; // Reset orders
             for(uint256 i = 0; i < sortedIds.length; i++) {
                 buyOrders[i] = orderById[sortedIds[i]];
-            }
-        } else {
+            } */
+        } /*else {
             // Check that the user has enough of the first symbol if he wants to sell it for the second symbol
             require(IERC20(firstSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough first token funds in your escrow contract to create this sell order');
 
@@ -209,9 +209,9 @@ contract DAX {
             for(uint256 i = 0; i < sortedIds.length; i++) {
                 sellOrders[i] = orderById[sortedIds[i]];
             }
-        }
+        }*/
         orderById[orderIdCounter] = myOrder;
-        orderIdCounter += 1;
+        orderIdCounter++;
     }
 
     /// @notice Sorts the selected array of Orders by price from lower to higher if it's a buy order or from highest to lowest if it's a sell order
@@ -226,7 +226,7 @@ contract DAX {
         uint256[] memory orderedIds;
         uint256 lastId = 0;
         for(uint i = 0; i < length; i++) {
-            if(orders[i].quantity > 0) {
+            /* if(orders[i].quantity > 0) { */
                 for(uint j = i+1; j < length; j++) {
                     // If it's a buy order, sort from lowest to highest since we want the lowest prices first
                     if(_type == 'buy' && orders[i].price > orders[j].price) {
@@ -243,7 +243,7 @@ contract DAX {
                 }
                 orderedIds[lastId] = orders[i].id;
                 lastId++;
-            }
+            /* } */
         }
 
         return orderedIds;
