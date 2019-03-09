@@ -71,14 +71,11 @@ contract DAX {
         require(IERC20(_token).totalSupply() > 0, 'The token address specified is not a valid ERC20 token');
         require(_tokenPairAddresses.length == _tokenPairSymbols.length, 'You must send the same number of addresses and symbols');
 
-        // Only whitelist those that are new, otherwise just continue adding token pairs below
-        if(!isTokenWhitelisted[_token]) {
-            isTokenWhitelisted[_token] = true;
-            isTokenSymbolWhitelisted[_symbol] = true;
-            whitelistedTokens.push(_token);
-            whitelistedTokenSymbols.push(_symbol);
-            tokenAddressBySymbol[_symbol] = _token;
-        }
+        isTokenWhitelisted[_token] = true;
+        isTokenSymbolWhitelisted[_symbol] = true;
+        whitelistedTokens.push(_token);
+        whitelistedTokenSymbols.push(_symbol);
+        tokenAddressBySymbol[_symbol] = _token;
 
         for(uint256 i = 0; i < _tokenPairAddresses.length; i++) {
             address currentToken = _tokenPairAddresses[i];

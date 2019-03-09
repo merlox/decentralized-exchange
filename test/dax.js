@@ -24,18 +24,20 @@ contract('DAX', accounts => {
         const pairBytes = [fillBytes32WithSpaces('BAT'), fillBytes32WithSpaces('HYDRO')]
         const pairAddresses = [batToken.address, hydroToken.address]
 
+        console.log('Whitelisting tokens...')
         transaction = dax.whitelistToken(tokenBytes, token.address, pairBytes, pairAddresses)
         await awaitConfirmation(transaction)
         const isWhitelisted = await dax.isTokenSymbolWhitelisted(tokenBytes)
         const validPairs = await dax.getTokenPairs(tokenBytes)
         assert.ok(isWhitelisted, 'The token must be whitelisted')
-        assert.equal(pairBytes, validPairs, 'The token pairs added must be valid')
+        assert.deepEqual(pairBytes, validPairs, 'The token pairs added must be valid')
     })
     it('Should deposit tokens correctly and create a valid Escrow contract', async () => {
         const tokenAddress = token.address
         const amount = 100
 
         // Whitelist the tokens before anything
+        console.log('Whitelisting tokens...')
         const tokenBytes = fillBytes32WithSpaces('TOKEN')
         const pairBytes = [fillBytes32WithSpaces('BAT'), fillBytes32WithSpaces('HYDRO')]
         const pairAddresses = [batToken.address, hydroToken.address]
@@ -44,9 +46,10 @@ contract('DAX', accounts => {
         const isWhitelisted = await dax.isTokenSymbolWhitelisted(tokenBytes)
         const validPairs = await dax.getTokenPairs(tokenBytes)
         assert.ok(isWhitelisted, 'The token must be whitelisted')
-        assert.equal(pairBytes, validPairs, 'The token pairs added must be valid')
+        assert.deepEqual(pairBytes, validPairs, 'The token pairs added must be valid')
 
         // Deposit the tokens
+        console.log('Depositing tokens...')
         transaction = token.approve(dax.address, amount)
         await awaitConfirmation(transaction)
         transaction = dax.depositTokens(tokenAddress, amount)
@@ -61,17 +64,32 @@ contract('DAX', accounts => {
         const amount = 100
         const initialTokens = parseInt(await token.balanceOf(accounts[0]))
 
+        // Whitelist the tokens before anything
+        console.log('Whitelisting tokens...')
+        const tokenBytes = fillBytes32WithSpaces('TOKEN')
+        const pairBytes = [fillBytes32WithSpaces('BAT'), fillBytes32WithSpaces('HYDRO')]
+        const pairAddresses = [batToken.address, hydroToken.address]
+        transaction = dax.whitelistToken(tokenBytes, token.address, pairBytes, pairAddresses)
+        await awaitConfirmation(transaction)
+        const isWhitelisted = await dax.isTokenSymbolWhitelisted(tokenBytes)
+        const validPairs = await dax.getTokenPairs(tokenBytes)
+        assert.ok(isWhitelisted, 'The token must be whitelisted')
+        assert.deepEqual(pairBytes, validPairs, 'The token pairs added must be valid')
+
+        // Do the token deposit
+        console.log('Depositing tokens...')
         transaction = token.approve(dax.address, amount)
         await awaitConfirmation(transaction)
         transaction = dax.depositTokens(tokenAddress, amount)
         await awaitConfirmation(transaction)
         assert.equal(parseInt(await token.balanceOf(accounts[0])), initialTokens - 100, 'You must deposit the tokens succesfully first')
 
+        // Extract the tokens
         transaction = dax.extractTokens(tokenAddress, amount)
         await awaitConfirmation(transaction)
         assert.equal(parseInt(await token.balanceOf(accounts[0])), initialTokens, 'You must have the same balance as when you started')
     })
-    it('Should create a limit order succesfully', async () => {
+    it.only('Should create a limit order succesfully', async () => {
         const type = fillBytes32WithSpaces('buy')
         const firstSymbol = fillBytes32WithSpaces('TOKEN')
         const secondSymbol = fillBytes32WithSpaces('HYDRO')
@@ -80,20 +98,29 @@ contract('DAX', accounts => {
         const secondSymbolPrice = quantity * pricePerToken
         const initialHydroTokens = parseInt(await hydroToken.balanceOf(accounts[0]))
 
-        // Whitelist the token first
-        transaction = dax.whitelistToken(firstSymbol, token.address, [secondSymbol])
+        // Whitelist the tokens before anything
+        console.log('Whitelisting tokens...')
+        const tokenBytes = fillBytes32WithSpaces('TOKEN')
+        const pairBytes = [fillBytes32WithSpaces('BAT'), fillBytes32WithSpaces('HYDRO')]
+        const pairAddresses = [batToken.address, hydroToken.address]
+        transaction = dax.whitelistToken(tokenBytes, token.address, pairBytes, pairAddresses)
         await awaitConfirmation(transaction)
-        const isWhitelisted = await dax.isTokenSymbolWhitelisted(firstSymbol)
-        const validPairs = await dax.getTokenPairs(firstSymbol)
+        const isWhitelisted = await dax.isTokenSymbolWhitelisted(tokenBytes)
+        const validPairs = await dax.getTokenPairs(tokenBytes)
         assert.ok(isWhitelisted, 'The token must be whitelisted')
+        assert.deepEqual(pairBytes, validPairs, 'The token pairs added must be valid')
 
         // Deposit the tokens
+        console.log('Depositing tokens...')
+        console.log('Approve')
         transaction = hydroToken.approve(dax.address, secondSymbolPrice)
         await awaitConfirmation(transaction)
+        console.log('Deposit')
         transaction = dax.depositTokens(hydroToken.address, secondSymbolPrice)
         await awaitConfirmation(transaction)
         const escrowAddress = await dax.escrowByUserAddress(accounts[0])
         const balance = parseInt(await hydroToken.balanceOf(escrowAddress))
+        console.log('Assert', parseInt(await hydroToken.balanceOf(accounts[0])) == initialHydroTokens - secondSymbolPrice)
         assert.equal(parseInt(await hydroToken.balanceOf(accounts[0])), initialHydroTokens - secondSymbolPrice, 'You must deposit the tokens succesfully first')
 
         transaction = dax.limitOrder(type, firstSymbol, secondSymbol, quantity, pricePerToken)
@@ -105,6 +132,7 @@ contract('DAX', accounts => {
 })
 
 function awaitConfirmation(transaction) {
+    let number = 0
     return new Promise((resolve, reject) => {
         transaction.on('confirmation', number => {
             process.stdout.clearLine()
