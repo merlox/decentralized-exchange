@@ -64,10 +64,12 @@ contract DAX {
     /// @dev If the transaction reverts, it could be because of the quantity of token pairs, try reducing the number and breaking the transaction into several pieces
     /// @param _symbol The symbol of the token
     /// @param _token The token to whitelist
-    /// @param _tokenPairs The token pairs to whitelist for this new token, for instance: ['ETH', 'BAT', 'HYDRO'] which will be converted to ['NEW', 'ETH'], ['NEW', 'BAT'] and ['NEW', 'HYDRO']
-    function whitelistToken(bytes32 _symbol, address _token, bytes32[] memory _tokenPairsSymbols, address[] _tokenPairAddresses) public onlyOwner {
+    /// @param _tokenPairSymbols The token pairs to whitelist for this new token, for instance: ['ETH', 'BAT', 'HYDRO'] which will be converted to ['NEW', 'ETH'], ['NEW', 'BAT'] and ['NEW', 'HYDRO']
+    /// @param _tokenPairAddresses The token pair addresses to whitelist for this new token, for instance: ['0x213...', '0x927...', '0x1238']
+    function whitelistToken(bytes32 _symbol, address _token, bytes32[] memory _tokenPairSymbols, address[] memory _tokenPairAddresses) public onlyOwner {
         require(_token != address(0), 'You must specify the token address to whitelist');
         require(IERC20(_token).totalSupply() > 0, 'The token address specified is not a valid ERC20 token');
+        require(_tokenPairAddresses.length == _tokenPairSymbols.length, 'You must send the same number of addresses and symbols');
 
         // Only whitelist those that are new, otherwise just continue adding token pairs below
         if(!isTokenWhitelisted[_token]) {
@@ -78,9 +80,9 @@ contract DAX {
             tokenAddressBySymbol[_symbol] = _token;
         }
 
-        for(uint256 i = 0; i < _tokenPairs.length; i++) {
-            address currentToken = _tokenPairs[i]
-            bytes32 currentSymbol = _tokenPairsSymbols[i]
+        for(uint256 i = 0; i < _tokenPairAddresses.length; i++) {
+            address currentToken = _tokenPairAddresses[i];
+            bytes32 currentSymbol = _tokenPairSymbols[i];
             if(!isTokenWhitelisted[currentToken]) {
                 isTokenWhitelisted[currentToken] = true;
                 isTokenSymbolWhitelisted[currentSymbol] = true;
@@ -90,7 +92,7 @@ contract DAX {
             }
         }
 
-        tokenPairs[_symbol] = _tokenPairs;
+        tokenPairs[_symbol] = _tokenPairSymbols;
     }
 
     /// @notice To store tokens inside the escrow contract associated with the user accounts as long as the users made an approval beforehand
@@ -98,6 +100,7 @@ contract DAX {
     /// @param _token The token address
     /// @param _amount The quantity to deposit to the escrow contracc
     function depositTokens(address _token, uint256 _amount) public {
+        require(isTokenWhitelisted[_token], 'The token to deposit must be whitelisted');
         require(_token != address(0), 'You must specify the token address');
         require(_amount > 0, 'You must send some tokens with this deposit function');
         require(IERC20(_token).allowance(msg.sender, address(this)) >= _amount, 'You must approve() the quantity of tokens that you want to deposit first');

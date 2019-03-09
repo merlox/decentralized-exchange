@@ -5,6 +5,7 @@ const emptyBytes = 0x0000000000000000000000000000000000000000
 let dax = {}
 let token = {}
 let hydroToken = {}
+let batToken = {}
 let transaction
 
 contract('DAX', accounts => {
@@ -13,14 +14,17 @@ contract('DAX', accounts => {
         console.log('Deployed token', token.address)
         hydroToken = await ERC20.new()
         console.log('Hydro token deployed', hydroToken.address)
+        batToken = await ERC20.new()
+        console.log('Bat token deployed', batToken.address)
         dax = await DAX.new()
         console.log('Deployed DAX', dax.address)
     })
     it('Should whitelist 2 tokens BAT and HYDRO', async () => {
         const tokenBytes = fillBytes32WithSpaces('TOKEN')
         const pairBytes = [fillBytes32WithSpaces('BAT'), fillBytes32WithSpaces('HYDRO')]
+        const pairAddresses = [batToken.address, hydroToken.address]
 
-        transaction = dax.whitelistToken(tokenBytes, token.address, pairBytes)
+        transaction = dax.whitelistToken(tokenBytes, token.address, pairBytes, pairAddresses)
         await awaitConfirmation(transaction)
         const isWhitelisted = await dax.isTokenSymbolWhitelisted(tokenBytes)
         const validPairs = await dax.getTokenPairs(tokenBytes)
@@ -31,13 +35,24 @@ contract('DAX', accounts => {
         const tokenAddress = token.address
         const amount = 100
 
+        // Whitelist the tokens before anything
+        const tokenBytes = fillBytes32WithSpaces('TOKEN')
+        const pairBytes = [fillBytes32WithSpaces('BAT'), fillBytes32WithSpaces('HYDRO')]
+        const pairAddresses = [batToken.address, hydroToken.address]
+        transaction = dax.whitelistToken(tokenBytes, token.address, pairBytes, pairAddresses)
+        await awaitConfirmation(transaction)
+        const isWhitelisted = await dax.isTokenSymbolWhitelisted(tokenBytes)
+        const validPairs = await dax.getTokenPairs(tokenBytes)
+        assert.ok(isWhitelisted, 'The token must be whitelisted')
+        assert.equal(pairBytes, validPairs, 'The token pairs added must be valid')
+
+        // Deposit the tokens
         transaction = token.approve(dax.address, amount)
         await awaitConfirmation(transaction)
         transaction = dax.depositTokens(tokenAddress, amount)
         await awaitConfirmation(transaction)
         const escrowAddress = await dax.escrowByUserAddress(accounts[0])
         const balance = parseInt(await token.balanceOf(escrowAddress))
-
         assert.ok(escrowAddress != emptyBytes, 'The escrow address must be set')
         assert.equal(balance, amount, 'The balance must be equal to the amount of tokens deposited')
     })
@@ -50,12 +65,10 @@ contract('DAX', accounts => {
         await awaitConfirmation(transaction)
         transaction = dax.depositTokens(tokenAddress, amount)
         await awaitConfirmation(transaction)
-
         assert.equal(parseInt(await token.balanceOf(accounts[0])), initialTokens - 100, 'You must deposit the tokens succesfully first')
 
         transaction = dax.extractTokens(tokenAddress, amount)
         await awaitConfirmation(transaction)
-
         assert.equal(parseInt(await token.balanceOf(accounts[0])), initialTokens, 'You must have the same balance as when you started')
     })
     it('Should create a limit order succesfully', async () => {
