@@ -173,6 +173,9 @@ contract('DAX', accounts => {
         assert.equal(sellOrdersFirst.orderType, type, 'The order type should be set')
     })
 
+    it('Should create a market order', async () => {
+        
+    })
 })
 
 function awaitConfirmation(transaction) {

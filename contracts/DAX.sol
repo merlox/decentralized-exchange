@@ -120,6 +120,12 @@ contract DAX {
 
     /// @notice To create a market order by filling one or more existing limit orders at the most profitable price given a token pair, type of order (buy or sell) and the amount of tokens to trade, the _quantity is how many _firstSymbol tokens you want to buy if it's a buy order or how many _firstSymbol tokens you want to sell at market price
     function marketOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity) public {
+        require(_type.length > 0, 'You must specify the type');
+        require(isTokenSymbolWhitelisted[_firstSymbol], 'The first symbol must be whitelisted');
+        require(isTokenSymbolWhitelisted[_secondSymbol], 'The second symbol must be whitelisted');
+        require(_quantity > 0, 'You must specify the quantity to buy or sell');
+        require(checkValidPair(_firstSymbol, _secondSymbol), 'The pair must be a valid pair');
+
         // Fills the latest market orders up until the _quantity is reached
         Order[] memory ordersToFill;
         uint256[] memory quantitiesToFillPerOrder;
@@ -182,6 +188,7 @@ contract DAX {
         require(isTokenSymbolWhitelisted[_firstSymbol], 'The first symbol must be whitelisted to trade with it');
         require(isTokenSymbolWhitelisted[_secondSymbol], 'The second symbol must be whitelisted to trade with it');
         require(userEscrow != address(0), 'You must deposit some tokens before creating orders, use depositToken()');
+        require(checkValidPair(_firstSymbol, _secondSymbol), 'The pair must be a valid pair');
 
         Order memory myOrder = Order(orderIdCounter, msg.sender, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
         orderById[orderIdCounter] = myOrder;
@@ -249,6 +256,16 @@ contract DAX {
         }
 
         return orderedIds;
+    }
+
+    /// @notice Checks if a pair is valid
+    function checkValidPair(bytes32 _firstSymbol, bytes32 _secondSymbol) public view returns(bool) {
+        bytes32 memory pairs = tokenPairs[_firstSymbol];
+
+        for(uint256 i = 0; i < pairs.length; i++) {
+            if(pairs[i] == _secondSymbol) return true;
+        }
+        return false;
     }
 
     /// @notice Returns the token pairs
