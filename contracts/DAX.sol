@@ -127,22 +127,22 @@ contract DAX {
         require(checkValidPair(_firstSymbol, _secondSymbol), 'The pair must be a valid pair');
 
         // Fills the latest market orders up until the _quantity is reached
-        Order[] memory ordersToFill;
-        uint256[] memory quantitiesToFillPerOrder;
+        Order[] memory ordersToFill = new Order[](buyOrders.length);
+        uint256[] memory quantitiesToFillPerOrder = new Order[](buyOrders.length);
         uint256 currentQuantity = 0;
         if(_type == 'buy') {
             // Loop through all the sell orders until we fill the quantity
             for(uint256 i = 0; i < sellOrders.length; i++) {
                 ordersToFill[i] = sellOrders[i];
-                if((currentQuantity + sellOrders[i].quantity) > _quantity) {
+                /* if((currentQuantity + sellOrders[i].quantity) > _quantity) {
                     quantitiesToFillPerOrder[i] =  _quantity - currentQuantity;
                     break;
                 }
                 currentQuantity += sellOrders[i].quantity;
-                quantitiesToFillPerOrder[i] = sellOrders[i].quantity;
+                quantitiesToFillPerOrder[i] = sellOrders[i].quantity; */
             }
         } else {
-            for(uint256 i = 0; i < buyOrders.length; i++) {
+            /* for(uint256 i = 0; i < buyOrders.length; i++) {
                 ordersToFill[i] = buyOrders[i];
                 if((currentQuantity + buyOrders[i].quantity) > _quantity) {
                     quantitiesToFillPerOrder[i] =  _quantity - currentQuantity;
@@ -150,11 +150,11 @@ contract DAX {
                 }
                 currentQuantity += buyOrders[i].quantity;
                 quantitiesToFillPerOrder[i] = buyOrders[i].quantity;
-            }
+            } */
         }
 
         // Close and fill orders
-        for(uint256 i = 0; i < ordersToFill.length; i++) {
+        /* for(uint256 i = 0; i < ordersToFill.length; i++) {
             Order memory myOrder = ordersToFill[i];
             // If we want to fill the entire order, do this
             if(quantitiesToFillPerOrder[i] == myOrder.quantity) {
@@ -174,7 +174,7 @@ contract DAX {
                 myOrder.quantity -= quantitiesToFillPerOrder[i];
                 orderById[myOrder.id] = myOrder;
             }
-        }
+        } */
     }
 
     /// @notice To create a market order given a token pair, type of order, amount of tokens to trade and the price per token. If the type is buy, the price will determine how many _secondSymbol tokens you are willing to pay for each _firstSymbol up until your _quantity or better if there are more profitable prices. If the type if sell, the price will determine how many _secondSymbol tokens you get for each _firstSymbol
@@ -260,9 +260,9 @@ contract DAX {
 
     /// @notice Checks if a pair is valid
     function checkValidPair(bytes32 _firstSymbol, bytes32 _secondSymbol) public view returns(bool) {
-        bytes32 memory pairs = tokenPairs[_firstSymbol];
+        bytes32[] memory pairs = tokenPairs[_firstSymbol];
 
-        for(uint256 i = 0; i < pairs.length; i++) {
+        for(uint256 i = 0; i < pairs.length; i++){
             if(pairs[i] == _secondSymbol) return true;
         }
         return false;
