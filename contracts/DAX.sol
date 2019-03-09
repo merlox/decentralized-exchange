@@ -192,11 +192,11 @@ contract DAX {
 
             // Sort existing orders by price the most efficient way possible, we could optimize even more by creating a buy array for each token
             uint256[] memory sortedIds = sortIdsByPrices('buy');
-            /* delete buyOrders; // Reset orders
+            delete buyOrders; // Reset orders
             for(uint256 i = 0; i < sortedIds.length; i++) {
                 buyOrders[i] = orderById[sortedIds[i]];
-            } */
-        } /*else {
+            }
+        } else {
             // Check that the user has enough of the first symbol if he wants to sell it for the second symbol
             require(IERC20(firstSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough first token funds in your escrow contract to create this sell order');
 
@@ -209,7 +209,7 @@ contract DAX {
             for(uint256 i = 0; i < sortedIds.length; i++) {
                 sellOrders[i] = orderById[sortedIds[i]];
             }
-        }*/
+        }
         orderById[orderIdCounter] = myOrder;
         orderIdCounter++;
     }
@@ -223,11 +223,11 @@ contract DAX {
         else orders = buyOrders;
 
         uint256 length = orders.length;
-        uint256[] memory orderedIds;
+        uint256[] memory orderedIds = new uint256[](length);
         uint256 lastId = 0;
         for(uint i = 0; i < length; i++) {
             if(orders[i].quantity > 0) {
-                /* for(uint j = i+1; j < length; j++) {
+                for(uint j = i+1; j < length; j++) {
                     // If it's a buy order, sort from lowest to highest since we want the lowest prices first
                     if(_type == 'buy' && orders[i].price > orders[j].price) {
                         Order memory temporaryOrder = orders[i];
@@ -242,7 +242,7 @@ contract DAX {
                     }
                 }
                 orderedIds[lastId] = orders[i].id;
-                lastId++; */
+                lastId++;
             }
         }
 
