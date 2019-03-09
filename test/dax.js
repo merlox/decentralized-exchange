@@ -123,10 +123,12 @@ contract('DAX', accounts => {
         console.log('Assert', parseInt(await hydroToken.balanceOf(accounts[0])) == initialHydroTokens - secondSymbolPrice)
         assert.equal(parseInt(await hydroToken.balanceOf(accounts[0])), initialHydroTokens - secondSymbolPrice, 'You must deposit the tokens succesfully first')
 
+        console.log('Does it fail here?')
         transaction = dax.limitOrder(type, firstSymbol, secondSymbol, quantity, pricePerToken)
         await awaitConfirmation(transaction)
         const counter = parseInt(await dax.orderIdCounter())
 
+        console.log('Or here?')
         assert.ok(counter == 1, 'The counter must increase after a succesful limit order creation')
     })
 })
