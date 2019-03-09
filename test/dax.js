@@ -89,7 +89,7 @@ contract('DAX', accounts => {
         await awaitConfirmation(transaction)
         assert.equal(parseInt(await token.balanceOf(accounts[0])), initialTokens, 'You must have the same balance as when you started')
     })
-    it.only('Should create a limit order succesfully', async () => {
+    it('Should create a buy limit order succesfully', async () => {
         const type = fillBytes32WithSpaces('buy')
         const firstSymbol = fillBytes32WithSpaces('TOKEN')
         const secondSymbol = fillBytes32WithSpaces('HYDRO')
@@ -130,6 +130,49 @@ contract('DAX', accounts => {
         assert.equal(buyOrdersFirst.quantity, quantity, 'The price per token should be set')
         assert.equal(buyOrdersFirst.orderType, type, 'The order type should be set')
     })
+
+    it('Should create a sell limit order succesfully', async () => {
+        const type = fillBytes32WithSpaces('sell')
+        const firstSymbol = fillBytes32WithSpaces('TOKEN')
+        const secondSymbol = fillBytes32WithSpaces('HYDRO')
+        const quantity = 500
+        const pricePerToken = 10
+        const firstSymbolPrice = quantity * pricePerToken
+        const initialTokens = parseInt(await token.balanceOf(accounts[0]))
+
+        // Whitelist the tokens before anything
+        console.log('Whitelisting tokens...')
+        const tokenBytes = fillBytes32WithSpaces('TOKEN')
+        const pairBytes = [fillBytes32WithSpaces('BAT'), fillBytes32WithSpaces('HYDRO')]
+        const pairAddresses = [batToken.address, hydroToken.address]
+        transaction = dax.whitelistToken(tokenBytes, token.address, pairBytes, pairAddresses)
+        await awaitConfirmation(transaction)
+        const isWhitelisted = await dax.isTokenSymbolWhitelisted(tokenBytes)
+        const validPairs = await dax.getTokenPairs(tokenBytes)
+        assert.ok(isWhitelisted, 'The token must be whitelisted')
+        assert.deepEqual(pairBytes, validPairs, 'The token pairs added must be valid')
+
+        // Deposit the tokens
+        console.log('Depositing tokens...')
+        transaction = token.approve(dax.address, firstSymbolPrice)
+        await awaitConfirmation(transaction)
+        transaction = dax.depositTokens(token.address, firstSymbolPrice)
+        await awaitConfirmation(transaction)
+        const escrowAddress = await dax.escrowByUserAddress(accounts[0])
+        const balance = parseInt(await token.balanceOf(escrowAddress))
+        assert.equal(parseInt(await token.balanceOf(accounts[0])), initialTokens - firstSymbolPrice, 'You must deposit the tokens succesfully first')
+
+        transaction = dax.limitOrder(type, firstSymbol, secondSymbol, quantity, pricePerToken)
+        await awaitConfirmation(transaction)
+        const counter = parseInt(await dax.orderIdCounter())
+        const sellOrdersFirst = await dax.sellOrders(0)
+
+        assert.ok(counter == 1, 'The counter must increase after a succesful limit order creation')
+        assert.equal(sellOrdersFirst.price, pricePerToken, 'The price per token should be set')
+        assert.equal(sellOrdersFirst.quantity, quantity, 'The price per token should be set')
+        assert.equal(sellOrdersFirst.orderType, type, 'The order type should be set')
+    })
+
 })
 
 function awaitConfirmation(transaction) {

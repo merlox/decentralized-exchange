@@ -211,7 +211,7 @@ contract DAX {
             delete sellOrders; // Reset orders
             sellOrders.length = sortedIds.length;
             for(uint256 i = 0; i < sortedIds.length; i++) {
-                sellOrders.push(orderById[sortedIds[i]]);
+                sellOrders[i] = orderById[sortedIds[i]];
             }
         }
     }
