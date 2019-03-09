@@ -125,8 +125,10 @@ contract('DAX', accounts => {
         const counter = parseInt(await dax.orderIdCounter())
         const buyOrdersFirst = await dax.buyOrders(0)
 
-        console.log('buyOrdersFirst', buyOrdersFirst)
         assert.ok(counter == 1, 'The counter must increase after a succesful limit order creation')
+        assert.equal(buyOrdersFirst.price, pricePerToken, 'The price per token should be set')
+        assert.equal(buyOrdersFirst.quantity, quantity, 'The price per token should be set')
+        assert.equal(buyOrdersFirst.orderType, type, 'The order type should be set')
     })
 })
 
