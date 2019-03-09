@@ -226,8 +226,8 @@ contract DAX {
         uint256[] memory orderedIds;
         uint256 lastId = 0;
         for(uint i = 0; i < length; i++) {
-            /* if(orders[i].quantity > 0) { */
-                for(uint j = i+1; j < length; j++) {
+            if(orders[i].quantity > 0) {
+                /* for(uint j = i+1; j < length; j++) {
                     // If it's a buy order, sort from lowest to highest since we want the lowest prices first
                     if(_type == 'buy' && orders[i].price > orders[j].price) {
                         Order memory temporaryOrder = orders[i];
@@ -242,8 +242,8 @@ contract DAX {
                     }
                 }
                 orderedIds[lastId] = orders[i].id;
-                lastId++;
-            /* } */
+                lastId++; */
+            }
         }
 
         return orderedIds;
