@@ -184,6 +184,8 @@ contract DAX {
         require(userEscrow != address(0), 'You must deposit some tokens before creating orders, use depositToken()');
 
         Order memory myOrder = Order(orderIdCounter, msg.sender, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
+        orderById[orderIdCounter] = myOrder;
+        orderIdCounter++;
         if(_type == 'buy') {
             // Check that the user has enough of the second symbol if he wants to buy the first symbol at that price
             require(IERC20(secondSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough second token funds in your escrow contract to create this buy order');
@@ -192,7 +194,8 @@ contract DAX {
 
             // Sort existing orders by price the most efficient way possible, we could optimize even more by creating a buy array for each token
             uint256[] memory sortedIds = sortIdsByPrices('buy');
-            delete buyOrders; // Reset orders
+            delete buyOrders;
+            buyOrders.length = sortedIds.length;
             for(uint256 i = 0; i < sortedIds.length; i++) {
                 buyOrders[i] = orderById[sortedIds[i]];
             }
@@ -206,12 +209,11 @@ contract DAX {
             // Sort existing orders by price the most efficient way possible, we could optimize even more by creating a sell array for each token
             uint256[] memory sortedIds = sortIdsByPrices('sell');
             delete sellOrders; // Reset orders
+            sellOrders.length = sortedIds.length;
             for(uint256 i = 0; i < sortedIds.length; i++) {
-                sellOrders[i] = orderById[sortedIds[i]];
+                sellOrders.push(orderById[sortedIds[i]]);
             }
         }
-        orderById[orderIdCounter] = myOrder;
-        orderIdCounter++;
     }
 
     /// @notice Sorts the selected array of Orders by price from lower to higher if it's a buy order or from highest to lowest if it's a sell order
