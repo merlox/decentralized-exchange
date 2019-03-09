@@ -76,20 +76,20 @@ contract DAX {
         whitelistedTokens.push(_token);
         whitelistedTokenSymbols.push(_symbol);
         tokenAddressBySymbol[_symbol] = _token;
+        tokenPairs[_symbol] = _tokenPairSymbols;
 
         for(uint256 i = 0; i < _tokenPairAddresses.length; i++) {
-            address currentToken = _tokenPairAddresses[i];
+            address currentAddress = _tokenPairAddresses[i];
             bytes32 currentSymbol = _tokenPairSymbols[i];
-            if(!isTokenWhitelisted[currentToken]) {
-                isTokenWhitelisted[currentToken] = true;
+            tokenPairs[currentSymbol].push(_symbol);
+            if(!isTokenWhitelisted[currentAddress]) {
+                isTokenWhitelisted[currentAddress] = true;
                 isTokenSymbolWhitelisted[currentSymbol] = true;
-                whitelistedTokens.push(currentToken);
+                whitelistedTokens.push(currentAddress);
                 whitelistedTokenSymbols.push(currentSymbol);
-                tokenAddressBySymbol[currentSymbol] = currentToken;
+                tokenAddressBySymbol[currentSymbol] = currentAddress;
             }
         }
-
-        tokenPairs[_symbol] = _tokenPairSymbols;
     }
 
     /// @notice To store tokens inside the escrow contract associated with the user accounts as long as the users made an approval beforehand
