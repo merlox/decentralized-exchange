@@ -15,6 +15,7 @@ pragma solidity ^0.5.4;
 import './Escrow.sol';
 
 contract DAX {
+    event TransferOrder(bytes32 _type, address indexed from, address indexed to, bytes32 tokenSymbol, uint256 quantity);
     enum OrderState {OPEN, CLOSED}
 
     struct Order {
@@ -157,27 +158,40 @@ contract DAX {
             }
         }
 
+        // When the myOrder.type == sell or _type == buy
+        // myOrder.owner send quantityToFill[] of _firstSymbol to msg.sender
+        // msg.sender send quantityToFill[] * myOwner.price of _secondSymbol to myOrder.owner
+
+        // When the myOrder.type == buy or _type == sell
+        // myOrder.owner send quantityToFill[] * myOwner.price of _secondSymbol to msg.sender
+        // msg.sender send quantityToFill[] of _firstSymbol to myOrder.owner
+
         // Close and fill orders
         for(uint256 i = 0; i < ordersToFill.length; i++) {
             Order memory myOrder = ordersToFill[i];
-            // If we want to fill the entire order, do this
+            if(_type == 'buy') {
+                // If the limit order is a buy order, send the firstSymbol to the creator of the limit order which is the buyer
+                Escrow(escrowByUserAddress[myOrder.owner]).transferTokens(tokenAddressBySymbol[_firstSymbol], msg.sender, quantitiesToFillPerOrder[i]);
+                Escrow(escrowByUserAddress[msg.sender]).transferTokens(tokenAddressBySymbol[_secondSymbol], myOrder.owner, quantitiesToFillPerOrder[i] * myOrder.price);
+
+                emit TransferOrder('sell', escrowByUserAddress[myOrder.owner], msg.sender, _firstSymbol, quantitiesToFillPerOrder[i]);
+                emit TransferOrder('buy', escrowByUserAddress[msg.sender], myOrder.owner, _secondSymbol, quantitiesToFillPerOrder[i] * myOrder.price);
+            } else {
+                // If this is a buy market order or a sell limit order for the opposite, send firstSymbol to the second user
+                Escrow(escrowByUserAddress[myOrder.owner]).transferTokens(tokenAddressBySymbol[_secondSymbol], msg.sender, quantitiesToFillPerOrder[i]);
+                Escrow(escrowByUserAddress[msg.sender]).transferTokens(tokenAddressBySymbol[_firstSymbol], myOrder.owner, quantitiesToFillPerOrder[i] * myOrder.price);
+
+                emit TransferOrder('buy', escrowByUserAddress[myOrder.owner], msg.sender, _secondSymbol, quantitiesToFillPerOrder[i]);
+                emit TransferOrder('sell', escrowByUserAddress[msg.sender], myOrder.owner, _firstSymbol, quantitiesToFillPerOrder[i] * myOrder.price);
+            }
+
             if(quantitiesToFillPerOrder[i] == myOrder.quantity) {
-                if(_type == 'buy') {
-                    // If the limit order is a buy order, send the firstSymbol to the creator of the limit order which is the buyer
-                    Escrow(escrowByUserAddress[msg.sender]).transferTokens(tokenAddressBySymbol[_secondSymbol], myOrder.owner, quantitiesToFillPerOrder[i]);
-                    Escrow(escrowByUserAddress[myOrder.owner]).transferTokens(tokenAddressBySymbol[_firstSymbol], msg.sender, myOrder.quantity * myOrder.price);
-                } else {
-                    // If this is a buy market order or a sell limit order for the opposite, send firstSymbol to the second user
-                    Escrow(escrowByUserAddress[msg.sender]).transferTokens(tokenAddressBySymbol[_firstSymbol], myOrder.owner, quantitiesToFillPerOrder[i]);
-                    Escrow(escrowByUserAddress[myOrder.owner]).transferTokens(tokenAddressBySymbol[_secondSymbol], msg.sender, myOrder.quantity * myOrder.price);
-                }
                 myOrder.state = OrderState.CLOSED;
                 closedOrders.push(ordersToFill[i]);
-                orderById[myOrder.id] = myOrder;
             } else {
                 myOrder.quantity -= quantitiesToFillPerOrder[i];
-                orderById[myOrder.id] = myOrder;
             }
+            orderById[myOrder.id] = myOrder;
         }
     }
 
@@ -199,7 +213,7 @@ contract DAX {
         orderIdCounter++;
         if(_type == 'buy') {
             // Check that the user has enough of the second symbol if he wants to buy the first symbol at that price
-            require(IERC20(secondSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough second token funds in your escrow contract to create this buy order');
+            require(IERC20(secondSymbolAddress).balanceOf(userEscrow) >= _quantity, 'You must have enough second token funds in your escrow contract to create this buy order');
 
             buyOrders.push(myOrder);
 
@@ -212,7 +226,7 @@ contract DAX {
             }
         } else {
             // Check that the user has enough of the first symbol if he wants to sell it for the second symbol
-            require(IERC20(firstSymbolAddress).balanceOf(userEscrow) >= (_quantity * _pricePerToken), 'You must have enough first token funds in your escrow contract to create this sell order');
+            require(IERC20(firstSymbolAddress).balanceOf(userEscrow) >= _quantity, 'You must have enough first token funds in your escrow contract to create this sell order');
 
             // Add the new order
             sellOrders.push(myOrder);

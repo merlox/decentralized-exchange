@@ -18,6 +18,12 @@ contract('DAX', accounts => {
         console.log('Bat token deployed', batToken.address)
         dax = await DAX.new()
         console.log('Deployed DAX', dax.address)
+
+        const event = hydroToken.Approval()
+        event.on('data', newEvent => {
+            console.log('New event', newEvent)
+            process.exit(0)
+        })
     })
     it('Should whitelist 2 tokens BAT and HYDRO', async () => {
         const tokenBytes = fillBytes32WithSpaces('TOKEN')
@@ -134,7 +140,6 @@ contract('DAX', accounts => {
         assert.equal(buyOrdersFirst.quantity, quantity, 'The price per token should be set')
         assert.equal(buyOrdersFirst.orderType, type, 'The order type should be set')
     })
-
     it('Should create a sell limit order succesfully', async () => {
         const type = fillBytes32WithSpaces('sell')
         const firstSymbol = fillBytes32WithSpaces('TOKEN')
@@ -177,12 +182,19 @@ contract('DAX', accounts => {
         assert.equal(sellOrdersFirst.quantity, quantity, 'The price per token should be set')
         assert.equal(sellOrdersFirst.orderType, type, 'The order type should be set')
     })
-
     it.only('Should fill a partial market order', async () => {
-        // 1. Create a limit order to sell 500 token for 5000 hydro total (10 each) approve 500 token
-        // 2. Create a market order to buy 100 token for 1000 hydro total (10 each) approve 1000 hydro
+        // 1. Create a limit order to sell 500 token to buy 5000 hydro total (10 each) approve 500 token
+        // 2. Create a market order to buy 100 token to sell 1000 hydro total (10 each) approve 1000 hydro
         // 3. Check that the first user has 400 token and 1000 hydro (previously 0)
         // 4. Check that the second user has 100 token and 0 hydro (previously 1000)
+
+        // When the myOrder.type == sell or _type == buy
+        // myOrder.owner send quantityToFill[] of _firstSymbol to msg.sender
+        // msg.sender send quantityToFill[] * myOwner.price of _secondSymbol to myOrder.owner
+
+        // When the myOrder.type == buy or _type == sell
+        // myOrder.owner send quantityToFill[] * myOwner.price of _secondSymbol to msg.sender
+        // msg.sender send quantityToFill[] of _firstSymbol to myOrder.owner
 
         // 1- First create the limit order
         const type = fillBytes32WithSpaces('sell')
@@ -190,7 +202,6 @@ contract('DAX', accounts => {
         const secondSymbol = fillBytes32WithSpaces('HYDRO')
         const quantity = 500
         const pricePerToken = 10
-        const firstSymbolPrice = quantity * pricePerToken
         const initialTokens = parseInt(await token.balanceOf(accounts[0]))
         const firstUserInitialTokenBalance = parseInt(await token.balanceOf(accounts[0]))
         const firstUserInitialHydroBalance = parseInt(await hydroToken.balanceOf(accounts[0]))
@@ -214,14 +225,17 @@ contract('DAX', accounts => {
 
         // 1- Deposit for first user limit order
         console.log('Depositing tokens...')
-        transaction = token.approve(dax.address, firstSymbolPrice)
+        transaction = token.approve(dax.address, quantity)
         await awaitConfirmation(transaction)
-        transaction = dax.depositTokens(token.address, firstSymbolPrice)
+        transaction = dax.depositTokens(token.address, quantity)
         await awaitConfirmation(transaction)
         const escrowAddress = await dax.escrowByUserAddress(accounts[0])
         const balance = parseInt(await token.balanceOf(escrowAddress))
-        assert.equal(balance, firstSymbolPrice, 'The escrow contract must have received enough tokens')
-        assert.equal(parseInt(await token.balanceOf(accounts[0])), initialTokens - firstSymbolPrice, 'You must deposit the tokens succesfully first')
+        assert.equal(balance, quantity, 'The escrow contract must have received enough tokens')
+        assert.equal(parseInt(await token.balanceOf(accounts[0])), initialTokens - quantity, 'You must deposit the tokens succesfully first')
+
+        console.log('First user', parseInt(await hydroToken.balanceOf(accounts[0])), 'HYDRO', parseInt(await token.balanceOf(accounts[0])), 'TOKEN')
+        console.log('Second user', parseInt(await hydroToken.balanceOf(accounts[1])), 'HYDRO', parseInt(await token.balanceOf(accounts[1])), 'TOKEN')
 
         // 1- Limit order
         console.log('Deploying limit order...')
@@ -239,32 +253,33 @@ contract('DAX', accounts => {
         const typeMarket = fillBytes32WithSpaces('buy')
         const firstSymbolMarket = fillBytes32WithSpaces('TOKEN')
         const secondSymbolMarket = fillBytes32WithSpaces('HYDRO')
-        const quantityMarket = 1000
+        const quantityToBuy = 100 // TOKEN
+        const requiredQuantityToSell = 1000 // HYDRO
         const initialTokensMarket = parseInt(await token.balanceOf(accounts[1]))
 
         // 2- Deposit the tokens to give in exchange for what you want to market
         console.log('Depositing tokens...')
         // Transfer to the second user
-        transaction = hydroToken.transfer(accounts[1], quantityMarket, {
+        transaction = hydroToken.transfer(accounts[1], requiredQuantityToSell, {
             from: accounts[0]
         })
         await awaitConfirmation(transaction)
-        transaction = hydroToken.approve(dax.address, quantityMarket, {
+        transaction = hydroToken.approve(dax.address, requiredQuantityToSell, {
             from: accounts[1]
         })
         await awaitConfirmation(transaction)
-        transaction = dax.depositTokens(hydroToken.address, quantityMarket, {
+        transaction = dax.depositTokens(hydroToken.address, requiredQuantityToSell, {
             from: accounts[1]
         })
         await awaitConfirmation(transaction)
         const escrowAddressTwo = await dax.escrowByUserAddress(accounts[1])
         const balanceTwo = parseInt(await hydroToken.balanceOf(escrowAddressTwo))
-        assert.equal(balanceTwo, quantityMarket, 'The escrow contract must have received enough tokens')
+        assert.equal(balanceTwo, requiredQuantityToSell, 'The escrow contract must have received enough tokens')
         assert.equal(parseInt(await hydroToken.balanceOf(accounts[1])), 0, 'You must deposit the tokens succesfully first')
 
         // 2- Create the market order
         console.log('Creating market order...')
-        transaction = dax.marketOrder(typeMarket, firstSymbolMarket, secondSymbolMarket, quantityMarket, {
+        transaction = dax.marketOrder(typeMarket, firstSymbolMarket, secondSymbolMarket, quantityToBuy, {
             from: accounts[1]
         })
         await awaitConfirmation(transaction)
