@@ -192,6 +192,13 @@ contract('DAX', accounts => {
         const pricePerToken = 10
         const firstSymbolPrice = quantity * pricePerToken
         const initialTokens = parseInt(await token.balanceOf(accounts[0]))
+        const firstUserInitialTokenBalance = parseInt(await token.balanceOf(accounts[0]))
+        const firstUserInitialHydroBalance = parseInt(await hydroToken.balanceOf(accounts[0]))
+        const secondUserInitialTokenBalance = parseInt(await token.balanceOf(accounts[1]))
+        const secondUserInitialHydroBalance = parseInt(await hydroToken.balanceOf(accounts[1]))
+
+        console.log('First user', firstUserInitialHydroBalance, 'HYDRO', firstUserInitialTokenBalance, 'TOKEN')
+        console.log('Second user', secondUserInitialHydroBalance, 'HYDRO', secondUserInitialTokenBalance, 'TOKEN')
 
         // 1- Whitelisting for limit order
         console.log('Whitelisting tokens...')
@@ -262,15 +269,19 @@ contract('DAX', accounts => {
         })
         await awaitConfirmation(transaction)
 
-        // 3- Check the first user balance 400 token and 1000 hydro (previously 0)
+        // 3- Check the first user balance 400 token and 1000 hydro (previously 10k)
         const firstUserFinalTokenBalance = parseInt(await token.balanceOf(accounts[0]))
         const firstUserFinalHydroBalance = parseInt(await hydroToken.balanceOf(accounts[0]))
-        assert.equal(firstUserFinalTokenBalance, 400, 'The second user has to have 400 tokens after the market order')
-        assert.equal(firstUserFinalHydroBalance, 1000, 'The second user has to have 1000 hydro after the market order')
-
-        // 4- Check the second user has 100 token and 0 hydro (previously 1000)
         const secondUserFinalTokenBalance = parseInt(await token.balanceOf(accounts[1]))
         const secondUserFinalHydroBalance = parseInt(await hydroToken.balanceOf(accounts[1]))
+
+        console.log('First user', firstUserFinalHydroBalance, 'HYDRO', firstUserFinalTokenBalance, 'TOKEN')
+        console.log('Second user', secondUserFinalHydroBalance, 'HYDRO', secondUserFinalTokenBalance, 'TOKEN')
+
+        assert.equal(firstUserFinalTokenBalance, initialTokens - 400, 'The first user has to have 400 tokens after the market order')
+        assert.equal(firstUserFinalHydroBalance, 1000, 'The first user has to have 1000 hydro after the market order')
+
+        // 4- Check the second user has 100 token and 0 hydro (previously 1000)
         assert.equal(secondUserFinalTokenBalance, 100, 'The second user has to have 100 tokens after the market order')
         assert.equal(secondUserFinalHydroBalance, 0, 'The second user has to have 0 hydro after the market order')
     })
@@ -280,14 +291,7 @@ function awaitConfirmation(transaction) {
     let number = 0
     return new Promise((resolve, reject) => {
         transaction.on('confirmation', number => {
-            process.stdout.clearLine()
-            process.stdout.cursorTo(0)
-            if(number == 3) {
-                process.stdout.write('Confirmation ' + number + '\n')
-                resolve()
-            } else {
-                process.stdout.write('Confirmation ' + number)
-            }
+            if(number == 1) resolve()
         })
     })
 }
