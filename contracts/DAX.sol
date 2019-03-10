@@ -178,19 +178,19 @@ contract DAX {
                 emit TransferOrder('buy', escrowByUserAddress[msg.sender], myOrder.owner, _secondSymbol, quantitiesToFillPerOrder[i] * myOrder.price);
             } else {
                 // If this is a buy market order or a sell limit order for the opposite, send firstSymbol to the second user
-                Escrow(escrowByUserAddress[myOrder.owner]).transferTokens(tokenAddressBySymbol[_secondSymbol], msg.sender, quantitiesToFillPerOrder[i]);
-                Escrow(escrowByUserAddress[msg.sender]).transferTokens(tokenAddressBySymbol[_firstSymbol], myOrder.owner, quantitiesToFillPerOrder[i] * myOrder.price);
+                Escrow(escrowByUserAddress[myOrder.owner]).transferTokens(tokenAddressBySymbol[_secondSymbol], msg.sender, quantitiesToFillPerOrder[i] * myOrder.price);
+                Escrow(escrowByUserAddress[msg.sender]).transferTokens(tokenAddressBySymbol[_firstSymbol], myOrder.owner, quantitiesToFillPerOrder[i]);
 
-                emit TransferOrder('buy', escrowByUserAddress[myOrder.owner], msg.sender, _secondSymbol, quantitiesToFillPerOrder[i]);
-                emit TransferOrder('sell', escrowByUserAddress[msg.sender], myOrder.owner, _firstSymbol, quantitiesToFillPerOrder[i] * myOrder.price);
+                emit TransferOrder('buy', escrowByUserAddress[myOrder.owner], msg.sender, _secondSymbol, quantitiesToFillPerOrder[i] * myOrder.price);
+                emit TransferOrder('sell', escrowByUserAddress[msg.sender], myOrder.owner, _firstSymbol, quantitiesToFillPerOrder[i]);
             }
 
             if(quantitiesToFillPerOrder[i] == myOrder.quantity) {
                 myOrder.state = OrderState.CLOSED;
                 closedOrders.push(ordersToFill[i]);
-            } else {
-                myOrder.quantity -= quantitiesToFillPerOrder[i];
             }
+            
+            myOrder.quantity -= quantitiesToFillPerOrder[i];
             orderById[myOrder.id] = myOrder;
         }
     }
