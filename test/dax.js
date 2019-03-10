@@ -228,9 +228,6 @@ contract('DAX', accounts => {
         assert.equal(balance, quantity, 'The escrow contract must have received enough tokens')
         assert.equal(parseInt(await token.balanceOf(accounts[0])), firstUserInitialTokenBalance - quantity, 'You must deposit the tokens succesfully first')
 
-        console.log('First user', parseInt(await hydroToken.balanceOf(accounts[0])), 'HYDRO', parseInt(await token.balanceOf(accounts[0])), 'TOKEN')
-        console.log('Second user', parseInt(await hydroToken.balanceOf(accounts[1])), 'HYDRO', parseInt(await token.balanceOf(accounts[1])), 'TOKEN')
-
         // 1- Limit order
         console.log('Deploying limit order...')
         transaction = dax.limitOrder(type, firstSymbol, secondSymbol, quantity, pricePerToken)
@@ -287,9 +284,6 @@ contract('DAX', accounts => {
         const firstUserFinalHydroBalance = parseInt(await hydroToken.balanceOf(accounts[0]))
         const secondUserFinalTokenBalance = parseInt(await token.balanceOf(accounts[1]))
         const secondUserFinalHydroBalance = parseInt(await hydroToken.balanceOf(accounts[1]))
-
-        console.log('First user', firstUserFinalHydroBalance, 'HYDRO', firstUserFinalTokenBalance, 'TOKEN')
-        console.log('Second user', secondUserFinalHydroBalance, 'HYDRO', secondUserFinalTokenBalance, 'TOKEN')
 
         assert.equal(firstUserFinalTokenBalance, firstUserInitialTokenBalance - 500, 'The first user has to have 500 tokens less after the market order (which is exactly what he deposited when creating the limit order)')
         assert.equal(firstUserFinalHydroBalance, firstUserInitialHydroBalance + requiredQuantityToSell, 'The first user has to have 1000 hydro after the market order')

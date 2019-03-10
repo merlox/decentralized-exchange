@@ -128,15 +128,15 @@ contract DAX {
         require(checkValidPair(_firstSymbol, _secondSymbol), 'The pair must be a valid pair');
 
         // Fills the latest market orders up until the _quantity is reached
-        Order[] memory ordersToFill;
+        uint256[] memory ordersToFillIds;
         uint256[] memory quantitiesToFillPerOrder;
         uint256 currentQuantity = 0;
         if(_type == 'buy') {
-            ordersToFill = new Order[](sellOrders.length);
+            ordersToFillIds = new uint256[](sellOrders.length);
             quantitiesToFillPerOrder = new uint256[](sellOrders.length);
             // Loop through all the sell orders until we fill the quantity
             for(uint256 i = 0; i < sellOrders.length; i++) {
-                ordersToFill[i] = sellOrders[i];
+                ordersToFillIds[i] = sellOrders[i].id;
                 if((currentQuantity + sellOrders[i].quantity) > _quantity) {
                     quantitiesToFillPerOrder[i] =  _quantity - currentQuantity;
                     break;
@@ -145,10 +145,10 @@ contract DAX {
                 quantitiesToFillPerOrder[i] = sellOrders[i].quantity;
             }
         } else {
-            ordersToFill = new Order[](buyOrders.length);
+            ordersToFillIds = new uint256[](buyOrders.length);
             quantitiesToFillPerOrder = new uint256[](buyOrders.length);
             for(uint256 i = 0; i < buyOrders.length; i++) {
-                ordersToFill[i] = buyOrders[i];
+                ordersToFillIds[i] = buyOrders[i].id;
                 if((currentQuantity + buyOrders[i].quantity) > _quantity) {
                     quantitiesToFillPerOrder[i] =  _quantity - currentQuantity;
                     break;
@@ -167,13 +167,12 @@ contract DAX {
         // msg.sender send quantityToFill[] of _firstSymbol to myOrder.owner
 
         // Close and fill orders
-        for(uint256 i = 0; i < ordersToFill.length; i++) {
-            Order memory myOrder = ordersToFill[i];
+        for(uint256 i = 0; i < ordersToFillIds.length; i++) {
+            Order memory myOrder = orderById[ordersToFillIds[i]];
             if(_type == 'buy') {
                 // If the limit order is a buy order, send the firstSymbol to the creator of the limit order which is the buyer
                 Escrow(escrowByUserAddress[myOrder.owner]).transferTokens(tokenAddressBySymbol[_firstSymbol], msg.sender, quantitiesToFillPerOrder[i]);
                 Escrow(escrowByUserAddress[msg.sender]).transferTokens(tokenAddressBySymbol[_secondSymbol], myOrder.owner, quantitiesToFillPerOrder[i] * myOrder.price); // TODO This is not happening, why?
-
 
                 emit TransferOrder('sell', escrowByUserAddress[myOrder.owner], msg.sender, _firstSymbol, quantitiesToFillPerOrder[i]);
                 emit TransferOrder('buy', escrowByUserAddress[msg.sender], myOrder.owner, _secondSymbol, quantitiesToFillPerOrder[i] * myOrder.price);
@@ -185,17 +184,16 @@ contract DAX {
                 emit TransferOrder('buy', escrowByUserAddress[myOrder.owner], msg.sender, _secondSymbol, quantitiesToFillPerOrder[i] * myOrder.price);
                 emit TransferOrder('sell', escrowByUserAddress[msg.sender], myOrder.owner, _firstSymbol, quantitiesToFillPerOrder[i]);
             }
-
             if(quantitiesToFillPerOrder[i] == myOrder.quantity) {
                 myOrder.state = OrderState.CLOSED;
-                closedOrders.push(ordersToFill[i]);
+                closedOrders.push(myOrder);
             }
-
             myOrder.quantity -= quantitiesToFillPerOrder[i];
             orderById[myOrder.id] = myOrder;
         }
 
         // TODO Update all the buy and sell orders with those changes in quantities to nullify completed orders
+        /* for(uint256 i = 0; i < ) */
     }
 
     /// @notice To create a market order given a token pair, type of order, amount of tokens to trade and the price per token. If the type is buy, the price will determine how many _secondSymbol tokens you are willing to pay for each _firstSymbol up until your _quantity or better if there are more profitable prices. If the type if sell, the price will determine how many _secondSymbol tokens you get for each _firstSymbol
@@ -213,7 +211,6 @@ contract DAX {
 
         Order memory myOrder = Order(orderIdCounter, msg.sender, _type, _firstSymbol, _secondSymbol, _quantity, _pricePerToken, now, OrderState.OPEN);
         orderById[orderIdCounter] = myOrder;
-        orderIdCounter++;
         if(_type == 'buy') {
             // Check that the user has enough of the second symbol if he wants to buy the first symbol at that price
             require(IERC20(secondSymbolAddress).balanceOf(userEscrow) >= _quantity, 'You must have enough second token funds in your escrow contract to create this buy order');
@@ -242,6 +239,8 @@ contract DAX {
                 sellOrders[i] = orderById[sortedIds[i]];
             }
         }
+
+        orderIdCounter++;
     }
 
     /// @notice Sorts the selected array of Orders by price from lower to higher if it's a buy order or from highest to lowest if it's a sell order
@@ -278,6 +277,8 @@ contract DAX {
 
         return orderedIds;
     }
+
+    /* function updateOrderPrices(bytes32 _type, Order[] memory ) public */
 
     /// @notice Checks if a pair is valid
     function checkValidPair(bytes32 _firstSymbol, bytes32 _secondSymbol) public view returns(bool) {
