@@ -34,7 +34,8 @@ contract Escrow {
         require(_token != address(0), 'The token address must be set');
         require(_to != address(0), 'The receiver address must be set');
         require(_amount > 0, 'You must specify the amount of tokens to transfer');
-        IERC20(_token).transfer(_to, _amount);
+
+        require(IERC20(_token).transfer(_to, _amount), 'The transfer must be successful');
     }
 
     /// @notice To see how many of a particular token this contract contains

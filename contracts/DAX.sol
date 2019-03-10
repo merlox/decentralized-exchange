@@ -172,7 +172,8 @@ contract DAX {
             if(_type == 'buy') {
                 // If the limit order is a buy order, send the firstSymbol to the creator of the limit order which is the buyer
                 Escrow(escrowByUserAddress[myOrder.owner]).transferTokens(tokenAddressBySymbol[_firstSymbol], msg.sender, quantitiesToFillPerOrder[i]);
-                Escrow(escrowByUserAddress[msg.sender]).transferTokens(tokenAddressBySymbol[_secondSymbol], myOrder.owner, quantitiesToFillPerOrder[i] * myOrder.price);
+                Escrow(escrowByUserAddress[msg.sender]).transferTokens(tokenAddressBySymbol[_secondSymbol], myOrder.owner, quantitiesToFillPerOrder[i] * myOrder.price); // TODO This is not happening, why?
+
 
                 emit TransferOrder('sell', escrowByUserAddress[myOrder.owner], msg.sender, _firstSymbol, quantitiesToFillPerOrder[i]);
                 emit TransferOrder('buy', escrowByUserAddress[msg.sender], myOrder.owner, _secondSymbol, quantitiesToFillPerOrder[i] * myOrder.price);
@@ -189,10 +190,12 @@ contract DAX {
                 myOrder.state = OrderState.CLOSED;
                 closedOrders.push(ordersToFill[i]);
             }
-            
+
             myOrder.quantity -= quantitiesToFillPerOrder[i];
             orderById[myOrder.id] = myOrder;
         }
+
+        // TODO Update all the buy and sell orders with those changes in quantities to nullify completed orders
     }
 
     /// @notice To create a market order given a token pair, type of order, amount of tokens to trade and the price per token. If the type is buy, the price will determine how many _secondSymbol tokens you are willing to pay for each _firstSymbol up until your _quantity or better if there are more profitable prices. If the type if sell, the price will determine how many _secondSymbol tokens you get for each _firstSymbol
