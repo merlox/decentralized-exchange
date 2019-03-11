@@ -66,9 +66,9 @@ contract DAX {
     /// @notice To whitelist a token so that is tradable in the exchange
     /// @dev If the transaction reverts, it could be because of the quantity of token pairs, try reducing the number and breaking the transaction into several pieces
     /// @param _symbol The symbol of the token
-    /// @param _token The token to whitelist
-    /// @param _tokenPairSymbols The token pairs to whitelist for this new token, for instance: ['ETH', 'BAT', 'HYDRO'] which will be converted to ['NEW', 'ETH'], ['NEW', 'BAT'] and ['NEW', 'HYDRO']
-    /// @param _tokenPairAddresses The token pair addresses to whitelist for this new token, for instance: ['0x213...', '0x927...', '0x1238']
+    /// @param _token The token to whitelist, for instance 'TOK'
+    /// @param _tokenPairSymbols The token pairs to whitelist for this new token, for instance: ['BAT', 'HYDRO'] which will be converted to ['TOK', 'BAT'] and ['TOK', 'HYDRO']
+    /// @param _tokenPairAddresses The token pair addresses to whitelist for this new token, for instance: ['0x213...', '0x927...', '0x128...']
     function whitelistToken(bytes32 _symbol, address _token, bytes32[] memory _tokenPairSymbols, address[] memory _tokenPairAddresses) public onlyOwner {
         require(_token != address(0), 'You must specify the token address to whitelist');
         require(IERC20(_token).totalSupply() > 0, 'The token address specified is not a valid ERC20 token');
@@ -122,6 +122,10 @@ contract DAX {
     }
 
     /// @notice To create a market order by filling one or more existing limit orders at the most profitable price given a token pair, type of order (buy or sell) and the amount of tokens to trade, the _quantity is how many _firstSymbol tokens you want to buy if it's a buy order or how many _firstSymbol tokens you want to sell at market price
+    /// @param _type The type of order either 'buy' or 'sell'
+    /// @param _firstSymbol The first token to buy or sell
+    /// @param _secondSymbol The second token to create a pair
+    /// @param _quantity The amount of tokens to sell or buy
     function marketOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity) public {
         require(_type.length > 0, 'You must specify the type');
         require(isTokenSymbolWhitelisted[_firstSymbol], 'The first symbol must be whitelisted');
@@ -204,6 +208,11 @@ contract DAX {
     }
 
     /// @notice To create a market order given a token pair, type of order, amount of tokens to trade and the price per token. If the type is buy, the price will determine how many _secondSymbol tokens you are willing to pay for each _firstSymbol up until your _quantity or better if there are more profitable prices. If the type if sell, the price will determine how many _secondSymbol tokens you get for each _firstSymbol
+    /// @param _type The type of order either 'buy' or 'sell'
+    /// @param _firstSymbol The first symbol to deal with
+    /// @param _secondSymbol The second symbol that you want to deal
+    /// @param _quantity How many tokens you want to deal, these are _firstSymbol tokens
+    /// @param _pricePerToken How many tokens you get or pay for your other symbol, the total quantity is _pricePerToken * _quantity
     function limitOrder(bytes32 _type, bytes32 _firstSymbol, bytes32 _secondSymbol, uint256 _quantity, uint256 _pricePerToken) public {
         address userEscrow = escrowByUserAddress[msg.sender];
         address firstSymbolAddress = tokenAddressBySymbol[_firstSymbol];
@@ -287,9 +296,11 @@ contract DAX {
         return orderedIds;
     }
 
-    /* function updateOrderPrices(bytes32 _type, Order[] memory ) public */
 
     /// @notice Checks if a pair is valid
+    /// @param _firstSymbol The first symbol of the pair
+    /// @param _secondSymbol The second symbol of the pair
+    /// @returns bool If the pair is valid or not
     function checkValidPair(bytes32 _firstSymbol, bytes32 _secondSymbol) public view returns(bool) {
         bytes32[] memory pairs = tokenPairs[_firstSymbol];
 
@@ -300,6 +311,8 @@ contract DAX {
     }
 
     /// @notice Returns the token pairs
+    /// @param _token To get the array of token pair for that selected token
+    /// @returns bytes32[] An array containing the pairs
     function getTokenPairs(bytes32 _token) public view returns(bytes32[] memory) {
         return tokenPairs[_token];
     }
