@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import MyWeb3 from 'web3'
 import './index.styl'
 import ABI from '../build/contracts/DAX.json'
+import TokenABI from '../build/contracts/ERC20.json'
 
 class Main extends React.Component {
     constructor() {
@@ -10,23 +11,12 @@ class Main extends React.Component {
 
         this.state = {
             contractInstance: {},
+            tokenInstance: {},
             userAddress: '',
-            trades: [{
-                id: 123,
-                type: 'buy',
-                firstSymbol: 'ETH',
-                secondSymbol: 'BAT',
-                quantity: 120, // You want to buy 120 firstSymbol
-                price: 200 // When buying, you get 1 firstSymbol for selling 200 secondSymbol
-            }],
-            history: [{
-                id: 927,
-                type: 'buy',
-                firstSymbol: 'ETH',
-                secondSymbol: 'BAT',
-                quantity: 2,
-                price: 20
-            }]
+            pairs: [],
+            buyOrders: [],
+            sellOrders: [],
+            closedOrders: []
         }
 
         // Create the contract instance
@@ -42,19 +32,68 @@ class Main extends React.Component {
             from: this.state.userAddress,
             gasPrice: 2e9
         })
-        await this.setState({contractInstance, userAddress})
+        const tokenAddress = TokenABI.networks['3'].address
+        const tokenAbi = TokenABI.abi
+        const tokenInstance = new myWeb3.eth.Contract(abi, tokenAddress, {
+            from: this.state.userAddress,
+            gasPrice: 2e9
+        })
+        await this.setState({contractInstance, tokenInstance, userAddress})
     }
 
-    async getOrders() {
-
+    async setOrders() {
+        const buyOrders = await this.state.contractInstance.methods.buyOrders().call({ from: this.state.userAddress })
+        const sellOrders = await this.state.contractInstance.methods.sellOrders().call({ from: this.state.userAddress })
+        const closedOrders = await this.state.contractInstance.methods.closedOrders().call({ from: this.state.userAddress })
+        this.setState({buyOrders, sellOrders, closedOrders})
     }
 
-    async createMarketOrder() {
+    async whitelistTokens(symbol, token, pairSymbols, pairAddresses) {
+        await this.state.contractInstance.methods.whitelistToken(symbol, token, pairSymbols, pairAddresses).send({ from: this.state.userAddress })
+    }
 
+    async depositTokens(address, amount) {
+        // Do the token allowance to the dax contract
+        const result = await this.state.tokenInstance.methods.approve(this.state.contractInstance.address, amount).send({ from: this.state.userAddress })
+        if(!result) return console.log('Error the approval wasn\'t successful')
+        // Create the transaction
+        await this.state.contractInstance.methoods.depositTokens(address, amount).send({ from: this.state.userAddress })
+    }
+
+    async extractTokens(address, amount) {
+        await this.state.contractInstance.methods.extractTokens(address, amount).send({ from: this.state.userAddress })
+    }
+
+    async createLimitOrder(approvalQuantity, type, firstSymbol, secondSymbol, quantity, pricePerToken) {
+        // Approve some tokens
+        await this.state.tokenInstance.methods.approve(this.state.contractInstance.address, approvalQuantity).send({ from: this.state.userAddress })
+        // Create the market order
+        await this.state.contractInstance.methods.limitOrder(type, firstSymbol, secondSymbol, quantity, pricePerToken).send({ from: this.state.userAddress })
+    }
+
+    async createMarketOrder(approvalQuantity, type, firstSymbol, secondSymbol, quantity) {
+        // Approve some tokens
+        await this.state.tokenInstance.methods.approve(this.state.contractInstance.address, approvalQuantity).send({ from: this.state.userAddress })
+        // Create the market order
+        await this.state.contractInstance.methods.marketOrder(type, firstSymbol, secondSymbol, quantity).send({ from: this.state.userAddress })
     }
 
     async getPairs() {
+        // Get the whitelisted symbols
+        const whitelistedSymbols = await this.state.contractInstance.methods.whitelistedTokenSymbols().call({ from: this.state.userAddress })
+        let pairs = []
+        // Get the pairs for each symbol
+        for(let i = 0; i < whitelistedSymbols.length; i++) {
+            const tokenPairs = await this.state.contractInstance.methods.tokenPairs().call({ from: this.state.userAddress })
 
+            for(let a = 0; a < tokenPairs.length; a++) {
+                pairs.push({
+                    firstSymbol: whitelistedSymbols[i],
+                    secondSymbol: tokenPairs[a]
+                })
+            }
+        }
+        this.setState({pairs})
     }
 
     render() {
