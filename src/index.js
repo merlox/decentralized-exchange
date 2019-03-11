@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import './index.styl'
+import ABI from '../build/contracts/DAX.json'
 
 class Main extends React.Component {
     constructor() {
@@ -535,6 +536,21 @@ class Main extends React.Component {
                 price: 10 // When selling, you get 305 secondSymbol for selling 1 firstSymbol
             }]
         }
+
+        // Create the contract instance
+        console.log('Abi', ABI)
+    }
+
+    async getOrders() {
+
+    }
+
+    async createMarketOrder() {
+
+    }
+
+    async getPairs() {
+
     }
 
     render() {

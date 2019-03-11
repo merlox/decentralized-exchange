@@ -203,7 +203,6 @@ contract DAX {
                 emit TransferOrder('buy', escrowByUserAddress[myOrder.owner], msg.sender, _secondSymbol, quantitiesToFillPerOrder[i] * myOrder.price);
                 emit TransferOrder('sell', escrowByUserAddress[msg.sender], myOrder.owner, _firstSymbol, quantitiesToFillPerOrder[i]);
             }
-
         }
     }
 
@@ -300,7 +299,7 @@ contract DAX {
     /// @notice Checks if a pair is valid
     /// @param _firstSymbol The first symbol of the pair
     /// @param _secondSymbol The second symbol of the pair
-    /// @returns bool If the pair is valid or not
+    /// @return bool If the pair is valid or not
     function checkValidPair(bytes32 _firstSymbol, bytes32 _secondSymbol) public view returns(bool) {
         bytes32[] memory pairs = tokenPairs[_firstSymbol];
 
@@ -312,7 +311,7 @@ contract DAX {
 
     /// @notice Returns the token pairs
     /// @param _token To get the array of token pair for that selected token
-    /// @returns bytes32[] An array containing the pairs
+    /// @return bytes32[] An array containing the pairs
     function getTokenPairs(bytes32 _token) public view returns(bytes32[] memory) {
         return tokenPairs[_token];
     }
