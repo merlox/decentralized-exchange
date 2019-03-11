@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "http-server dist/"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +27,7 @@
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
     "truffle-hdwallet-provider": "^1.0.5",
+    "web3": "^1.0.0-beta.48",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.2.3"
   }
