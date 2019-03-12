@@ -102,13 +102,15 @@ contract ERC20 is IERC20 {
     using SafeMath for uint256;
 
     mapping (address => uint256) private _balances;
-
     mapping (address => mapping (address => uint256)) private _allowed;
-
     uint256 private _totalSupply = 10e4;
+    string public name;
+    string public symbol;
 
-    constructor () public {
+    constructor (string memory _name, string memory _symbol) public {
         _balances[msg.sender] = _totalSupply;
+        name = _name;
+        symbol = _symbol;
     }
 
     /**

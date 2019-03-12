@@ -35500,7 +35500,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.0-beta.2",
-  "updatedAt": "2019-03-11T21:52:42.851Z",
+  "updatedAt": "2019-03-12T08:29:57.961Z",
   "devdoc": {
     "methods": {
       "checkValidPair(bytes32,bytes32)": {

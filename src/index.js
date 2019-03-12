@@ -5,6 +5,9 @@ import './index.styl'
 import ABI from '../build/contracts/DAX.json'
 import TokenABI from '../build/contracts/ERC20.json'
 
+const batToken = '0x850Cbb38828adF8a89d7d799CCf1010Dc238F665'
+const watToken = '0x029cc401Ef45B2a2B2D6D2D6677b9F94E26cfF9d'
+
 class Main extends React.Component {
     constructor() {
         super()
@@ -12,6 +15,7 @@ class Main extends React.Component {
         this.state = {
             contractInstance: {},
             tokenInstance: {},
+            secondTokenInstance: {},
             userAddress: '',
             pairs: [],
             buyOrders: [],
@@ -21,10 +25,19 @@ class Main extends React.Component {
 
         // Create the contract instance
         window.myWeb3 = new MyWeb3(MyWeb3.givenProvider)
-        this.setContractInstance()
+        this.setup()
     }
 
-    async setContractInstance() {
+    async setup() {
+        console.log('Setting up contract instances')
+        await this.setContractInstances()
+        console.log('Setting up orders')
+        await this.setOrders()
+        console.log('Setting up pairs')
+        await this.setPairs()
+    }
+
+    async setContractInstances() {
         const contractAddress = ABI.networks['3'].address
         const abi = ABI.abi
         const userAddress = (await myWeb3.eth.getAccounts())[0]
@@ -32,13 +45,18 @@ class Main extends React.Component {
             from: this.state.userAddress,
             gasPrice: 2e9
         })
-        const tokenAddress = TokenABI.networks['3'].address
+        const tokenAddress = batToken
         const tokenAbi = TokenABI.abi
         const tokenInstance = new myWeb3.eth.Contract(abi, tokenAddress, {
             from: this.state.userAddress,
             gasPrice: 2e9
         })
-        await this.setState({contractInstance, tokenInstance, userAddress})
+        const secondTokenAddress = watToken
+        const secondTokenInstance = new myWeb3.eth.Contract(abi, tokenAddress, {
+            from: this.state.userAddress,
+            gasPrice: 2e9
+        })
+        await this.setState({contractInstance, tokenInstance, secondTokenInstance, userAddress})
     }
 
     async setOrders() {
@@ -46,6 +64,24 @@ class Main extends React.Component {
         const sellOrders = await this.state.contractInstance.methods.sellOrders().call({ from: this.state.userAddress })
         const closedOrders = await this.state.contractInstance.methods.closedOrders().call({ from: this.state.userAddress })
         this.setState({buyOrders, sellOrders, closedOrders})
+    }
+
+    async setPairs() {
+        // Get the whitelisted symbols
+        const whitelistedSymbols = await this.state.contractInstance.methods.whitelistedTokenSymbols().call({ from: this.state.userAddress })
+        let pairs = []
+        // Get the pairs for each symbol
+        for(let i = 0; i < whitelistedSymbols.length; i++) {
+            const tokenPairs = await this.state.contractInstance.methods.tokenPairs().call({ from: this.state.userAddress })
+
+            for(let a = 0; a < tokenPairs.length; a++) {
+                pairs.push({
+                    firstSymbol: whitelistedSymbols[i],
+                    secondSymbol: tokenPairs[a]
+                })
+            }
+        }
+        this.setState({pairs})
     }
 
     async whitelistTokens(symbol, token, pairSymbols, pairAddresses) {
@@ -76,24 +112,6 @@ class Main extends React.Component {
         await this.state.tokenInstance.methods.approve(this.state.contractInstance.address, approvalQuantity).send({ from: this.state.userAddress })
         // Create the market order
         await this.state.contractInstance.methods.marketOrder(type, firstSymbol, secondSymbol, quantity).send({ from: this.state.userAddress })
-    }
-
-    async getPairs() {
-        // Get the whitelisted symbols
-        const whitelistedSymbols = await this.state.contractInstance.methods.whitelistedTokenSymbols().call({ from: this.state.userAddress })
-        let pairs = []
-        // Get the pairs for each symbol
-        for(let i = 0; i < whitelistedSymbols.length; i++) {
-            const tokenPairs = await this.state.contractInstance.methods.tokenPairs().call({ from: this.state.userAddress })
-
-            for(let a = 0; a < tokenPairs.length; a++) {
-                pairs.push({
-                    firstSymbol: whitelistedSymbols[i],
-                    secondSymbol: tokenPairs[a]
-                })
-            }
-        }
-        this.setState({pairs})
     }
 
     render() {
