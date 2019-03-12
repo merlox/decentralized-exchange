@@ -138,9 +138,9 @@ class Main extends React.Component {
 
     async withdrawTokens(symbol, amount) {
         if(symbol == 'BAT') {
-            await this.state.tokenInstance.methods.extractTokens(batToken, amount).send({ from: this.state.userAddress })
+            await this.state.contractInstance.methods.extractTokens(batToken, amount).send({ from: this.state.userAddress })
         } else if(symbol == 'WAT') {
-            await this.state.secondTokenInstance.methods.extractTokens(watToken, amount).send({ from: this.state.userAddress })
+            await this.state.contractInstance.methods.extractTokens(watToken, amount).send({ from: this.state.userAddress })
         }
     }
 
