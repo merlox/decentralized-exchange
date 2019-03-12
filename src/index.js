@@ -29,12 +29,8 @@ class Main extends React.Component {
     }
 
     // To test bytes32 functions
-    async fillBytes32WithSpaces(name) {
-        let nameHex = myWeb3.utils.toHex(name)
-        for(let i = nameHex.length; i < 66; i++) {
-            nameHex = nameHex + '0'
-        }
-        return nameHex
+    fillBytes32WithSpaces(name) {
+        return myWeb3.utils.fromAscii(name)
     }
 
     async setup() {
@@ -50,6 +46,8 @@ class Main extends React.Component {
         const contractAddress = ABI.networks['3'].address
         const abi = ABI.abi
         const userAddress = (await myWeb3.eth.getAccounts())[0]
+        if(!userAddress) return console.error('You must unlock metamask to use this app on ropsten!')
+        await this.setState({userAddress})
         const contractInstance = new myWeb3.eth.Contract(abi, contractAddress, {
             from: this.state.userAddress,
             gasPrice: 2e9
@@ -65,14 +63,30 @@ class Main extends React.Component {
             from: this.state.userAddress,
             gasPrice: 2e9
         })
-        await this.setState({contractInstance, tokenInstance, secondTokenInstance, userAddress})
+        await this.setState({contractInstance, tokenInstance, secondTokenInstance})
     }
 
     async setOrders() {
-        const buyOrders = await this.state.contractInstance.methods.getOrder(this.fillBytes32WithSpaces('buy'), 0).call({ from: this.state.userAddress })
-        const sellOrders = await this.state.contractInstance.methods.sellOrders(this.fillBytes32WithSpaces('sell'), 0).call({ from: this.state.userAddress })
-        const closedOrders = await this.state.contractInstance.methods.closedOrders(this.fillBytes32WithSpaces('close'), 0).call({ from: this.state.userAddress })
-        this.setState({buyOrders, sellOrders, closedOrders})
+        // First get the length of all the orders so that you can loop through them
+        console.log(this.state.userAddress)
+        console.log(await this.state.contractInstance.methods.getOrderLength(this.fillBytes32WithSpaces("buy")).call({ from: this.state.userAddress, gas: 8e6 }))
+        // const sellOrdersLength = await this.state.contractInstance.methods.getOrderLength(this.fillBytes32WithSpaces('sell')).call({ from: this.state.userAddress })
+        // const closedOrdersLength = await this.state.contractInstance.methods.getOrderLength(this.fillBytes32WithSpaces('closed')).call({ from: this.state.userAddress })
+        // let buyOrders = []
+        // let sellOrders = []
+        // let closedOrders = []
+        //
+        // for(let i = 0; i < buyOrdersLength; i++) {
+        //     buyOrders.push(await this.state.contractInstance.methods.getOrder(this.fillBytes32WithSpaces('buy'), i).call({ from: this.state.userAddress }))
+        // }
+        // for(let i = 0; i < sellOrdersLength; i++) {
+        //     sellOrders.push(await this.state.contractInstance.methods.sellOrders(this.fillBytes32WithSpaces('sell'), 0).call({ from: this.state.userAddress }))
+        // }
+        // for(let i = 0; i < closedOrdersLength; i++) {
+        //     closedOrders.push(await this.state.contractInstance.methods.closedOrders(this.fillBytes32WithSpaces('close'), 0).call({ from: this.state.userAddress }))
+        // }
+        //
+        // this.setState({buyOrders, sellOrders, closedOrders})
     }
 
     async setPairs() {
