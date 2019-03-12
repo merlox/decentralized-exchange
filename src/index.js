@@ -28,8 +28,8 @@ class Main extends React.Component {
         this.setup()
     }
 
-    // To test bytes32 functions
-    fillBytes32WithSpaces(name) {
+    // To use bytes32 functions
+    bytes32(name) {
         return myWeb3.utils.fromAscii(name)
     }
 
@@ -68,21 +68,21 @@ class Main extends React.Component {
 
     async setOrders() {
         // First get the length of all the orders so that you can loop through them
-        const buyOrdersLength = await this.state.contractInstance.methods.getOrderLength(this.fillBytes32WithSpaces("buy")).call({ from: this.state.userAddress, gas: 8e6 })
-        const sellOrdersLength = await this.state.contractInstance.methods.getOrderLength(this.fillBytes32WithSpaces('sell')).call({ from: this.state.userAddress })
-        const closedOrdersLength = await this.state.contractInstance.methods.getOrderLength(this.fillBytes32WithSpaces('closed')).call({ from: this.state.userAddress })
+        const buyOrdersLength = await this.state.contractInstance.methods.getOrderLength(this.bytes32("buy")).call({ from: this.state.userAddress })
+        const sellOrdersLength = await this.state.contractInstance.methods.getOrderLength(this.bytes32('sell')).call({ from: this.state.userAddress })
+        const closedOrdersLength = await this.state.contractInstance.methods.getOrderLength(this.bytes32('closed')).call({ from: this.state.userAddress })
         let buyOrders = []
         let sellOrders = []
         let closedOrders = []
 
         for(let i = 0; i < buyOrdersLength; i++) {
-            buyOrders.push(await this.state.contractInstance.methods.getOrder(this.fillBytes32WithSpaces('buy'), i).call({ from: this.state.userAddress }))
+            buyOrders.push(await this.state.contractInstance.methods.getOrder(this.bytes32('buy'), i).call({ from: this.state.userAddress }))
         }
         for(let i = 0; i < sellOrdersLength; i++) {
-            sellOrders.push(await this.state.contractInstance.methods.sellOrders(this.fillBytes32WithSpaces('sell'), 0).call({ from: this.state.userAddress }))
+            sellOrders.push(await this.state.contractInstance.methods.sellOrders(this.bytes32('sell'), 0).call({ from: this.state.userAddress }))
         }
         for(let i = 0; i < closedOrdersLength; i++) {
-            closedOrders.push(await this.state.contractInstance.methods.closedOrders(this.fillBytes32WithSpaces('close'), 0).call({ from: this.state.userAddress }))
+            closedOrders.push(await this.state.contractInstance.methods.closedOrders(this.bytes32('close'), 0).call({ from: this.state.userAddress }))
         }
 
         this.setState({buyOrders, sellOrders, closedOrders})
