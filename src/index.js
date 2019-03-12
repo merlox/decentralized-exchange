@@ -17,14 +17,16 @@ class Main extends React.Component {
             tokenInstance: {},
             secondTokenInstance: {},
             userAddress: '',
-            pairs: [],
+            firstSymbol: 'BAT', // Sample tokens
+            secondSymbol: 'WAT', // Sample tokens
+            balanceFirstSymbol: 0,
+            balanceSecondSymbol: 0,
+            escrow: '',
             buyOrders: [],
             sellOrders: [],
             closedOrders: []
         }
 
-        // Create the contract instance
-        window.myWeb3 = new MyWeb3(MyWeb3.givenProvider)
         this.setup()
     }
 
@@ -34,6 +36,13 @@ class Main extends React.Component {
     }
 
     async setup() {
+        // Create the contract instance
+        window.myWeb3 = new MyWeb3(ethereum)
+        try {
+            await ethereum.enable();
+        } catch (error) {
+            console.error('You must approve this dApp to interact with it')
+        }
         console.log('Setting up contract instances')
         await this.setContractInstances()
         console.log('Setting up orders')
@@ -52,14 +61,12 @@ class Main extends React.Component {
             from: this.state.userAddress,
             gasPrice: 2e9
         })
-        const tokenAddress = batToken
         const tokenAbi = TokenABI.abi
-        const tokenInstance = new myWeb3.eth.Contract(abi, tokenAddress, {
+        const tokenInstance = new myWeb3.eth.Contract(abi, batToken, {
             from: this.state.userAddress,
             gasPrice: 2e9
         })
-        const secondTokenAddress = watToken
-        const secondTokenInstance = new myWeb3.eth.Contract(abi, tokenAddress, {
+        const secondTokenInstance = new myWeb3.eth.Contract(abi, watToken, {
             from: this.state.userAddress,
             gasPrice: 2e9
         })
@@ -89,25 +96,22 @@ class Main extends React.Component {
     }
 
     async setPairs() {
-        // Get the whitelisted symbols
-        const whitelistedSymbols = await this.state.contractInstance.methods.getWhitelistedTokenSymbols().call({ from: this.state.userAddress })
-        let pairs = []
-        // Get the pairs for each symbol
-        for(let i = 0; i < whitelistedSymbols.length; i++) {
-            const tokenPairs = await this.state.contractInstance.methods.tokenPairs().call({ from: this.state.userAddress })
-
-            for(let a = 0; a < tokenPairs.length; a++) {
-                pairs.push({
-                    firstSymbol: whitelistedSymbols[i],
-                    secondSymbol: tokenPairs[a]
-                })
-            }
+        // Here you'd add all the logic to get all the token symbols, in this case we're keeping it simple with one fixed pair
+        // If there are no pairs, whitelist a new one automatically if this is the owner of the DAX contract
+        const owner = await this.state.contractInstance.methods.owner().call({ from: this.state.userAddress })
+        if(owner == this.state.userAddress && !firstSymbol) {
+            await this.state.contractInstance.methods.whitelistToken(this.bytes32('BAT'), batToken, [this.bytes32('WAT')], [watToken]).send({ from: this.state.userAddress, gas: 8e6 })
         }
-        this.setState({pairs})
+
+        // Set the balance of each symbol considering how many tokens you have in escrow
+        const escrow = await this.state.contractInstance.methods.escrowByUserAddress(this.state.userAddress).call({ from: this.state.userAddress })
+        const balanceOne = await this.state.tokenInstance.methods.balanceOf(escrow).call({ from: this.state.userAddress })
+        const balanceTwo = await this.state.secondTokenInstance.methods.balanceOf(escrow).call({ from: this.state.userAddress })
+        this.setState({escrow, balanceOne, balanceTwo})
     }
 
     async whitelistTokens(symbol, token, pairSymbols, pairAddresses) {
-        await this.state.contractInstance.methods.whitelistToken(symbol, token, pairSymbols, pairAddresses).send({ from: this.state.userAddress })
+        await this.state.contractInstance.methods.whitelistToken(this.bytes32(symbol), token, pairSymbols, pairAddresses).send({ from: this.state.userAddress })
     }
 
     async depositTokens(address, amount) {
@@ -139,7 +143,12 @@ class Main extends React.Component {
     render() {
         return (
             <div className="main-container">
-                <Sidebar />
+                <Sidebar
+                    firstSymbol={this.state.firstSymbol}
+                    secondSymbol={this.state.secondSymbol}
+                    balanceOne={this.state.balanceOne}
+                    balanceTwo={this.state.balanceTwo}
+                />
                 <Orders
                     buyOrders={this.state.buyOrders}
                     sellOrders={this.state.sellOrders}
@@ -158,19 +167,20 @@ class Sidebar extends React.Component {
     constructor() {
         super()
         this.state = {
-            showLimitOrderInput: false
+            showLimitOrderInput: false,
         }
     }
+
 
     render() {
         return (
             <div className="sidebar">
                 <div className="selected-assets-title heading">Selected assets</div>
-                <div className="selected-asset-one">ETH</div>
-                <div className="selected-asset-two">BAT</div>
+                <div className="selected-asset-one">{this.props.firstSymbol}</div>
+                <div className="selected-asset-two">{this.props.secondSymbol}</div>
                 <div className="your-portfolio heading">Your portfolio</div>
-                <div className="grid-center">ETH:</div><div className="grid-center">10</div>
-                <div className="grid-center">BAT:</div><div className="grid-center">200</div>
+                <div className="grid-center">{this.props.firstSymbol}:</div><div className="grid-center">{this.props.balanceOne}</div>
+                <div className="grid-center">{this.props.secondSymbol}:</div><div className="grid-center">{this.props.balanceTwo}</div>
                 <div className="money-management heading">Money management</div>
                 <button className="button-outline">Deposit</button>
                 <button className="button-outline">Withdraw</button>
