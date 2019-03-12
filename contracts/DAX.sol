@@ -344,4 +344,10 @@ contract DAX {
             return closedOrders.length;
         }
     }
+
+    /// @notice To get all the whitelisted symbols
+    /// @return bytes32[] The array of symbols
+    function getWhitelistedTokenSymbols() public view returns(bytes32[] memory) {
+        return whitelistedTokenSymbols;
+    }
 }
