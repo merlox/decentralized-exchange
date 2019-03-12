@@ -315,4 +315,33 @@ contract DAX {
     function getTokenPairs(bytes32 _token) public view returns(bytes32[] memory) {
         return tokenPairs[_token];
     }
+
+    /// @notice To get an order from the arrays of orders
+    /// @param _type The type of order to get
+    /// @param _index The index of the order to get
+    /// @return Order The order struct
+    function getOrder(bytes32 _type, uint256 _index) public view returns(uint256, address, bytes32, bytes32, bytes32, uint256, uint256, uint256, OrderState) {
+        Order memory myOrder;
+        if(_type == 'buy') {
+             myOrder = buyOrders[_index];
+        } else if(_type == 'sell') {
+            myOrder = sellOrders[_index];
+        } else if(_type == 'closed') {
+            myOrder = closedOrders[_index];
+        }
+        return (myOrder.id, myOrder.owner, myOrder.orderType, myOrder.firstSymbol, myOrder.secondSymbol, myOrder.quantity, myOrder.price, myOrder.timestamp, myOrder.state);
+    }
+
+    /// @notice To get the length of the specified order array
+    /// @param _type The type of order
+    /// @return uint256 The number of elements inside that order
+    function getOrderLength(bytes32 _type) public view returns(uint256) {
+        if(_type == 'buy') {
+            return buyOrders.length;
+        } else if(_type == 'sell') {
+            return sellOrders.length;
+        } else if(_type == 'closed') {
+            return closedOrders.length;
+        }
+    }
 }

@@ -28,6 +28,15 @@ class Main extends React.Component {
         this.setup()
     }
 
+    // To test bytes32 functions
+    async fillBytes32WithSpaces(name) {
+        let nameHex = myWeb3.utils.toHex(name)
+        for(let i = nameHex.length; i < 66; i++) {
+            nameHex = nameHex + '0'
+        }
+        return nameHex
+    }
+
     async setup() {
         console.log('Setting up contract instances')
         await this.setContractInstances()
@@ -60,9 +69,9 @@ class Main extends React.Component {
     }
 
     async setOrders() {
-        const buyOrders = await this.state.contractInstance.methods.buyOrders().call({ from: this.state.userAddress })
-        const sellOrders = await this.state.contractInstance.methods.sellOrders().call({ from: this.state.userAddress })
-        const closedOrders = await this.state.contractInstance.methods.closedOrders().call({ from: this.state.userAddress })
+        const buyOrders = await this.state.contractInstance.methods.getOrder(this.fillBytes32WithSpaces('buy'), 0).call({ from: this.state.userAddress })
+        const sellOrders = await this.state.contractInstance.methods.sellOrders(this.fillBytes32WithSpaces('sell'), 0).call({ from: this.state.userAddress })
+        const closedOrders = await this.state.contractInstance.methods.closedOrders(this.fillBytes32WithSpaces('close'), 0).call({ from: this.state.userAddress })
         this.setState({buyOrders, sellOrders, closedOrders})
     }
 
