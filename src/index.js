@@ -7,6 +7,7 @@ import TokenABI from '../build/contracts/ERC20.json'
 
 const batToken = '0x850Cbb38828adF8a89d7d799CCf1010Dc238F665'
 const watToken = '0x029cc401Ef45B2a2B2D6D2D6677b9F94E26cfF9d'
+const dax = ABI.networks['3'].address
 
 class Main extends React.Component {
     constructor() {
@@ -52,21 +53,18 @@ class Main extends React.Component {
     }
 
     async setContractInstances() {
-        const contractAddress = ABI.networks['3'].address
-        const abi = ABI.abi
         const userAddress = (await myWeb3.eth.getAccounts())[0]
         if(!userAddress) return console.error('You must unlock metamask to use this dApp on ropsten!')
         await this.setState({userAddress})
-        const contractInstance = new myWeb3.eth.Contract(abi, contractAddress, {
+        const contractInstance = new myWeb3.eth.Contract(ABI.abi, dax, {
             from: this.state.userAddress,
             gasPrice: 2e9
         })
-        const tokenAbi = TokenABI.abi
-        const tokenInstance = new myWeb3.eth.Contract(abi, batToken, {
+        const tokenInstance = new myWeb3.eth.Contract(TokenABI.abi, batToken, {
             from: this.state.userAddress,
             gasPrice: 2e9
         })
-        const secondTokenInstance = new myWeb3.eth.Contract(abi, watToken, {
+        const secondTokenInstance = new myWeb3.eth.Contract(TokenABI.abi, watToken, {
             from: this.state.userAddress,
             gasPrice: 2e9
         })
@@ -114,16 +112,30 @@ class Main extends React.Component {
         await this.state.contractInstance.methods.whitelistToken(this.bytes32(symbol), token, pairSymbols, pairAddresses).send({ from: this.state.userAddress })
     }
 
-    async depositTokens(address, amount) {
-        // Do the token allowance to the dax contract
-        const result = await this.state.tokenInstance.methods.approve(this.state.contractInstance.address, amount).send({ from: this.state.userAddress })
-        if(!result) return console.log('Error the approval wasn\'t successful')
-        // Create the transaction
-        await this.state.contractInstance.methoods.depositTokens(address, amount).send({ from: this.state.userAddress })
+    async depositTokens(symbol, amount) {
+        if(symbol == 'BAT') {
+            if(this.state.balanceFirstSymbol == 0) return alert("You don't have enough BAT tokens to deposit in your address")
+            // Do the token allowance to the dax contract
+            const result = await this.state.tokenInstance.methods.approve(dax, amount).send({ from: this.state.userAddress })
+            if(!result) return console.error("Error the approval wasn't successful")
+            // Create the transaction
+            await this.state.contractInstance.methoods.depositTokens(batToken, amount).send({ from: this.state.userAddress })
+        } else if(symbol == 'WAT') {
+            if(this.state.balanceSecondSymbol == 0) return alert("You don't have enough WAT tokens to deposit in your address")
+            // Do the token allowance to the dax contract
+            const result = await this.state.secondTokenInstance.methods.approve(this.state.contractInstance.address, amount).send({ from: this.state.userAddress })
+            if(!result) return console.error("Error the approval wasn't successful")
+            // Create the transaction
+            await this.state.contractInstance.methoods.depositTokens(watToken, amount).send({ from: this.state.userAddress })
+        }
     }
 
-    async extractTokens(address, amount) {
-        await this.state.contractInstance.methods.extractTokens(address, amount).send({ from: this.state.userAddress })
+    async withdrawTokens(symbol, amount) {
+        if(symbol == 'BAT') {
+            await this.state.tokenInstance.methoods.extractTokens(batToken, amount).send({ from: this.state.userAddress })
+        } else if(symbol == 'WAT') {
+            await this.state.secondTokenInstance.methoods.extractTokens(watToken, amount).send({ from: this.state.userAddress })
+        }
     }
 
     async createLimitOrder(approvalQuantity, type, firstSymbol, secondSymbol, quantity, pricePerToken) {
@@ -148,6 +160,8 @@ class Main extends React.Component {
                     secondSymbol={this.state.secondSymbol}
                     balanceOne={this.state.balanceOne}
                     balanceTwo={this.state.balanceTwo}
+                    deposit={(symbol, amount) => this.depositTokens(symbol, amount)}
+                    withdraw={(symbol, amount) => this.withdrawTokens(symbol, amount)}
                 />
                 <Orders
                     buyOrders={this.state.buyOrders}
@@ -171,7 +185,6 @@ class Sidebar extends React.Component {
         }
     }
 
-
     render() {
         return (
             <div className="sidebar">
@@ -179,11 +192,17 @@ class Sidebar extends React.Component {
                 <div className="selected-asset-one">{this.props.firstSymbol}</div>
                 <div className="selected-asset-two">{this.props.secondSymbol}</div>
                 <div className="your-portfolio heading">Your portfolio</div>
-                <div className="grid-center">{this.props.firstSymbol}:</div><div className="grid-center">{this.props.balanceOne}</div>
-                <div className="grid-center">{this.props.secondSymbol}:</div><div className="grid-center">{this.props.balanceTwo}</div>
+                <div className="grid-center">{this.props.firstSymbol}:</div><div className="grid-center">{this.props.balanceOne ? this.props.balanceOne : 'Loading...'}</div>
+                <div className="grid-center">{this.props.secondSymbol}:</div><div className="grid-center">{this.props.balanceTwo ? this.props.balanceTwo : 'Loading...'}</div>
                 <div className="money-management heading">Money management</div>
-                <button className="button-outline">Deposit</button>
-                <button className="button-outline">Withdraw</button>
+                <button className="button-outline" onClick={() => {
+                    const amount = prompt(`How many ${this.props.firstSymbol} tokens do you want to deposit?`)
+                    this.props.deposit(this.props.firstSymbol, amount)
+                }}>Deposit</button>
+                <button className="button-outline" onClick={() => {
+                    const amount = prompt(`How many ${this.props.firstSymbol} tokens do you want to withdraw?`)
+                    this.props.withdraw(this.props.firstSymbol, amount)
+                }}>Withdraw</button>
                 <div className="actions heading">Actions</div>
                 <button>Buy</button>
                 <button className="sell">Sell</button>
