@@ -38635,12 +38635,12 @@
     "3": {
       "events": {},
       "links": {},
-      "address": "0x3C5CDfECaECdab26100044af072A3d1CFCee23F9",
-      "transactionHash": "0xc4d72c62fe4fc8e8ea29e1732c5ad1f3d757457a360243f1a4d923611f80262b"
+      "address": "0x25E08CD2866B7AdE27C906d4f58C9Ded92333465",
+      "transactionHash": "0x49a0c8ed158a77054d009378853a00a0d87515515ce428243abf5af0a915bcce"
     }
   },
   "schemaVersion": "3.0.0-beta.2",
-  "updatedAt": "2019-03-12T17:41:50.093Z",
+  "updatedAt": "2019-03-12T19:04:56.119Z",
   "devdoc": {
     "methods": {
       "checkValidPair(bytes32,bytes32)": {

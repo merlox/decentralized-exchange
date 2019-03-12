@@ -97,7 +97,8 @@ class Main extends React.Component {
         // Here you'd add all the logic to get all the token symbols, in this case we're keeping it simple with one fixed pair
         // If there are no pairs, whitelist a new one automatically if this is the owner of the DAX contract
         const owner = await this.state.contractInstance.methods.owner().call({ from: this.state.userAddress })
-        if(owner == this.state.userAddress && !firstSymbol) {
+        const isWhitelisted = await this.state.contractInstance.methods.isTokenWhitelisted(batToken).call({ from: this.state.userAddress })
+        if(owner == this.state.userAddress && !isWhitelisted) {
             await this.state.contractInstance.methods.whitelistToken(this.bytes32('BAT'), batToken, [this.bytes32('WAT')], [watToken]).send({ from: this.state.userAddress, gas: 8e6 })
         }
 
@@ -114,27 +115,32 @@ class Main extends React.Component {
 
     async depositTokens(symbol, amount) {
         if(symbol == 'BAT') {
-            if(this.state.balanceFirstSymbol == 0) return alert("You don't have enough BAT tokens to deposit in your address")
+            let result
             // Do the token allowance to the dax contract
-            const result = await this.state.tokenInstance.methods.approve(dax, amount).send({ from: this.state.userAddress })
-            if(!result) return console.error("Error the approval wasn't successful")
+            if(this.state.balanceOne < amount) {
+                // First approve to 0 to avoid errors and then increase it
+                await this.state.tokenInstance.methods.approve(dax, 0).send({ from: this.state.userAddress })
+                result = await this.state.tokenInstance.methods.approve(dax, amount).send({ from: this.state.userAddress })
+            }
             // Create the transaction
-            await this.state.contractInstance.methoods.depositTokens(batToken, amount).send({ from: this.state.userAddress })
+            await this.state.contractInstance.methods.depositTokens(batToken, amount).send({ from: this.state.userAddress })
         } else if(symbol == 'WAT') {
-            if(this.state.balanceSecondSymbol == 0) return alert("You don't have enough WAT tokens to deposit in your address")
-            // Do the token allowance to the dax contract
-            const result = await this.state.secondTokenInstance.methods.approve(this.state.contractInstance.address, amount).send({ from: this.state.userAddress })
-            if(!result) return console.error("Error the approval wasn't successful")
+            let result
+            if(this.state.balanceOne < amount) {
+                // First approve to 0 to avoid errors and then increase it
+                await this.state.secondTokenInstance.methods.approve(dax, 0).send({ from: this.state.userAddress })
+                result = await this.state.secondTokenInstance.methods.approve(dax, amount).send({ from: this.state.userAddress })
+            }
             // Create the transaction
-            await this.state.contractInstance.methoods.depositTokens(watToken, amount).send({ from: this.state.userAddress })
+            await this.state.contractInstance.methods.depositTokens(watToken, amount).send({ from: this.state.userAddress })
         }
     }
 
     async withdrawTokens(symbol, amount) {
         if(symbol == 'BAT') {
-            await this.state.tokenInstance.methoods.extractTokens(batToken, amount).send({ from: this.state.userAddress })
+            await this.state.tokenInstance.methods.extractTokens(batToken, amount).send({ from: this.state.userAddress })
         } else if(symbol == 'WAT') {
-            await this.state.secondTokenInstance.methoods.extractTokens(watToken, amount).send({ from: this.state.userAddress })
+            await this.state.secondTokenInstance.methods.extractTokens(watToken, amount).send({ from: this.state.userAddress })
         }
     }
 
