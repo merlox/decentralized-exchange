@@ -144,16 +144,12 @@ class Main extends React.Component {
         }
     }
 
-    async createLimitOrder(approvalQuantity, type, firstSymbol, secondSymbol, quantity, pricePerToken) {
-        // Approve some tokens
-        await this.state.tokenInstance.methods.approve(this.state.contractInstance.address, approvalQuantity).send({ from: this.state.userAddress })
-        // Create the market order
+    async createLimitOrder(type, firstSymbol, secondSymbol, quantity, pricePerToken) {
+        // Create the limit order
         await this.state.contractInstance.methods.limitOrder(type, firstSymbol, secondSymbol, quantity, pricePerToken).send({ from: this.state.userAddress })
     }
 
-    async createMarketOrder(approvalQuantity, type, firstSymbol, secondSymbol, quantity) {
-        // Approve some tokens
-        await this.state.tokenInstance.methods.approve(this.state.contractInstance.address, approvalQuantity).send({ from: this.state.userAddress })
+    async createMarketOrder(type, firstSymbol, secondSymbol, quantity) {
         // Create the market order
         await this.state.contractInstance.methods.marketOrder(type, firstSymbol, secondSymbol, quantity).send({ from: this.state.userAddress })
     }
@@ -168,6 +164,8 @@ class Main extends React.Component {
                     balanceTwo={this.state.balanceTwo}
                     deposit={(symbol, amount) => this.depositTokens(symbol, amount)}
                     withdraw={(symbol, amount) => this.withdrawTokens(symbol, amount)}
+                    limitOrder={(type, firstSymbol, secondSymbol, quantity, pricePerToken) => this.createLimitOrder(type, firstSymbol, secondSymbol, quantity, pricePerToken)}
+                    marketOrder={(type, firstSymbol, secondSymbol, quantity) => this.createMarketOrder(type, firstSymbol, secondSymbol, quantity)}
                 />
                 <Orders
                     buyOrders={this.state.buyOrders}
@@ -187,8 +185,15 @@ class Sidebar extends React.Component {
     constructor() {
         super()
         this.state = {
-            showLimitOrderInput: false,
+            selectedLimitOrder: false,
+            limitOrderPrice: 0,
+            orderQuantity: 0,
         }
+    }
+
+    // To use bytes32 functions
+    bytes32(name) {
+        return myWeb3.utils.fromAscii(name)
     }
 
     render() {
@@ -204,22 +209,54 @@ class Sidebar extends React.Component {
                 <button className="button-outline" onClick={() => {
                     const amount = prompt(`How many ${this.props.firstSymbol} tokens do you want to deposit?`)
                     this.props.deposit(this.props.firstSymbol, amount)
-                }}>Deposit</button>
+                }}>Deposit {this.props.firstSymbol} </button>
                 <button className="button-outline" onClick={() => {
                     const amount = prompt(`How many ${this.props.firstSymbol} tokens do you want to withdraw?`)
                     this.props.withdraw(this.props.firstSymbol, amount)
-                }}>Withdraw</button>
+                }}>Withdraw {this.props.firstSymbol}</button>
                 <div className="actions heading">Actions</div>
-                <button>Buy</button>
-                <button className="sell">Sell</button>
+                <button onClick={() => {
+                    if(this.state.orderQuantity == 0) return alert('You must specify how many tokens you want to buy')
+                    if(this.state.selectedLimitOrder) {
+                        if(this.state.limitOrderPrice == 0) return alert('You must specify the token price at which you want to buy')
+                        if(this.props.balanceTwo < (this.state.orderQuantity * this.state.limitOrderPrice)) {
+                            return alert(`You must approve ${this.state.orderQuantity * this.state.limitOrderPrice} of ${this.props.secondSymbol} tokens to create this buy limit order, your ${this.props.secondSymbol} token balance must be larger than ${this.state.orderQuantity * this.state.limitOrderPrice}`)
+                        }
+                        // Buy the this.state.orderQuantity of this.props.firstSymbol
+                        this.props.limitOrder(this.bytes32('buy'), this.bytes32(this.props.firstSymbol), this.bytes32(this.props.secondSymbol), this.state.orderQuantity, this.state.limitOrderPrice)
+                    } else {
+                        this.props.marketOrder(this.bytes32('buy'), this.bytes32(this.props.firstSymbol), this.bytes32(this.props.secondSymbol), this.state.orderQuantity)
+                    }
+                }}>Buy {this.props.firstSymbol}</button>
+                <button onClick={() => {
+                    if(this.state.orderQuantity == 0) return alert('You must specify how many tokens you want to sell')
+                    if(this.state.selectedLimitOrder) {
+                        if(this.state.limitOrderPrice == 0) return alert('You must specify the token price at which you want to sell')
+                        if(this.props.balanceOne < this.state.orderQuantity) {
+                            return alert(`You must approve ${this.state.orderQuantity} of ${this.props.firstSymbol} tokens to create this sell limit order, your ${this.props.firstSymbol} token balance must be larger than ${this.state.orderQuantity}`)
+                        }
+                        // Buy the this.state.orderQuantity of this.props.firstSymbol
+                        this.props.limitOrder(this.bytes32('sell'), this.bytes32(this.props.firstSymbol), this.bytes32(this.props.secondSymbol), this.state.orderQuantity, this.state.limitOrderPrice)
+                    } else {
+                        this.props.marketOrder(this.bytes32('sell'), this.bytes32(this.props.firstSymbol), this.bytes32(this.props.secondSymbol), this.state.orderQuantity)
+                    }
+                }} className="sell">Sell {this.props.firstSymbol}</button>
                 <select defaultValue="market-order" onChange={selected => {
-                    if(selected.target.value == 'limit-order') this.setState({showLimitOrderInput: true})
-                    else this.setState({showLimitOrderInput: false})
+                    if(selected.target.value == 'limit-order') {
+                        this.setState({selectedLimitOrder: true})
+                    } else {
+                        this.setState({selectedLimitOrder: false})
+                    }
                 }}>
                     <option value="market-order">Market Order</option>
                     <option value="limit-order">Limit Order</option>
                 </select>
-                <input ref="limit-order-amount" className={this.state.showLimitOrderInput ? '' : 'hidden'} type="number" placeholder="Price to buy or sell at..."/>
+                <input onChange={event => {
+                    this.setState({limitOrderPrice: event.target.value})
+                }} className={this.state.selectedLimitOrder ? '' : 'hidden'} type="number" placeholder="Price to buy or sell at..." />
+                <input onChange={event => {
+                    this.setState({orderQuantity: event.target.value})
+                }} type="number" placeholder={`Quantity of ${this.props.firstSymbol} to buy or sell...`} />
             </div>
         )
     }
