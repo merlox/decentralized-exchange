@@ -150,22 +150,21 @@ class Main extends React.Component {
 
     async depositTokens(symbol, amount) {
         if(symbol == 'BAT') {
-            let result
-            // Do the token allowance to the dax contract
-            if(this.state.balanceOne < amount) {
-                // First approve to 0 to avoid errors and then increase it
-                await this.state.tokenInstance.methods.approve(dax, 0).send({ from: this.state.userAddress })
-                result = await this.state.tokenInstance.methods.approve(dax, amount).send({ from: this.state.userAddress })
-            }
+            // Check the token balace before approving
+            const balance = await this.state.tokenInstance.methods.balanceOf(this.state.userAddress).call({ from: this.state.userAddress })
+            if(balance < amount) return alert(`You can't deposit ${amount} BAT since you have ${balance} BAT in your account, get more tokens before depositing`)
+            // First approve to 0 to avoid errors and then increase it
+            await this.state.tokenInstance.methods.approve(dax, 0).send({ from: this.state.userAddress })
+            await this.state.tokenInstance.methods.approve(dax, amount).send({ from: this.state.userAddress })
             // Create the transaction
             await this.state.contractInstance.methods.depositTokens(batToken, amount).send({ from: this.state.userAddress })
         } else if(symbol == 'WAT') {
-            let result
-            if(this.state.balanceOne < amount) {
-                // First approve to 0 to avoid errors and then increase it
-                await this.state.secondTokenInstance.methods.approve(dax, 0).send({ from: this.state.userAddress })
-                result = await this.state.secondTokenInstance.methods.approve(dax, amount).send({ from: this.state.userAddress })
-            }
+            // Check the token balace before approving
+            const balance = await this.state.secondTokenInstance.methods.balanceOf(this.state.userAddress).call({ from: this.state.userAddress })
+            if(balance < amount) return alert(`You can't deposit ${amount} WAT since you have ${balance} WAT in your account, get more tokens before depositing`)
+            // First approve to 0 to avoid errors and then increase it
+            await this.state.secondTokenInstance.methods.approve(dax, 0).send({ from: this.state.userAddress })
+            await this.state.secondTokenInstance.methods.approve(dax, amount).send({ from: this.state.userAddress })
             // Create the transaction
             await this.state.contractInstance.methods.depositTokens(watToken, amount).send({ from: this.state.userAddress })
         }
@@ -249,6 +248,14 @@ class Sidebar extends React.Component {
                     const amount = prompt(`How many ${this.props.firstSymbol} tokens do you want to withdraw?`)
                     this.props.withdraw(this.props.firstSymbol, amount)
                 }}>Withdraw {this.props.firstSymbol}</button>
+                <button className="button-outline" onClick={() => {
+                    const amount = prompt(`How many ${this.props.secondSymbol} tokens do you want to deposit?`)
+                    this.props.deposit(this.props.secondSymbol, amount)
+                }}>Deposit {this.props.secondSymbol} </button>
+                <button className="button-outline" onClick={() => {
+                    const amount = prompt(`How many ${this.props.secondSymbol} tokens do you want to withdraw?`)
+                    this.props.withdraw(this.props.secondSymbol, amount)
+                }}>Withdraw {this.props.secondSymbol}</button>
                 <div className="actions heading">Actions</div>
                 <button onClick={() => {
                     if(this.state.orderQuantity == 0) return alert('You must specify how many tokens you want to buy')
