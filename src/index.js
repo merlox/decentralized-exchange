@@ -81,15 +81,50 @@ class Main extends React.Component {
         let closedOrders = []
 
         for(let i = 0; i < buyOrdersLength; i++) {
-            buyOrders.push(await this.state.contractInstance.methods.getOrder(this.bytes32('buy'), i).call({ from: this.state.userAddress }))
+            const order = await this.state.contractInstance.methods.getOrder(this.bytes32('buy'), i).call({ from: this.state.userAddress })
+            const orderObject = {
+                id: order[0],
+                owner: order[1],
+                type: myWeb3.utils.toUtf8(order[2]),
+                firstSymbol: myWeb3.utils.toUtf8(order[3]),
+                secondSymbol: myWeb3.utils.toUtf8(order[4]),
+                quantity: order[5],
+                price: order[6],
+                timestamp: order[7],
+                state: order[8],
+            }
+            buyOrders.push(orderObject)
         }
         for(let i = 0; i < sellOrdersLength; i++) {
-            sellOrders.push(await this.state.contractInstance.methods.sellOrders(this.bytes32('sell'), 0).call({ from: this.state.userAddress }))
+            const order = await this.state.contractInstance.methods.getOrder(this.bytes32('sell'), 0).call({ from: this.state.userAddress })
+            const orderObject = {
+                id: order[0],
+                owner: order[1],
+                type: myWeb3.utils.toUtf8(order[2]),
+                firstSymbol: myWeb3.utils.toUtf8(order[3]),
+                secondSymbol: myWeb3.utils.toUtf8(order[4]),
+                quantity: order[5],
+                price: order[6],
+                timestamp: order[7],
+                state: order[8],
+            }
+            sellOrders.push(orderObject)
         }
         for(let i = 0; i < closedOrdersLength; i++) {
-            closedOrders.push(await this.state.contractInstance.methods.closedOrders(this.bytes32('close'), 0).call({ from: this.state.userAddress }))
+            const order = await this.state.contractInstance.methods.closedOrders(this.bytes32('close'), 0).call({ from: this.state.userAddress })
+            const orderObject = {
+                id: order[0],
+                owner: order[1],
+                type: myWeb3.utils.toUtf8(order[2]),
+                firstSymbol: myWeb3.utils.toUtf8(order[3]),
+                secondSymbol: myWeb3.utils.toUtf8(order[4]),
+                quantity: order[5],
+                price: order[6],
+                timestamp: order[7],
+                state: order[8],
+            }
+            closedOrders.push(orderObject)
         }
-
         this.setState({buyOrders, sellOrders, closedOrders})
     }
 
@@ -276,16 +311,17 @@ class Orders extends React.Component {
                 <div key={trade.id + index} className="trade-container buy-trade">
                     <div className="trade-symbol">{trade.firstSymbol}</div>
                     <div className="trade-symbol">{trade.secondSymbol}</div>
-                    <div className="trade-pricing">{trade.type} {trade.quantity} {trade.firstSymbol} at {trade.price} {trade.secondSymbol} each</div>
+                    <div className="trade-pricing">{trade.type} {trade.quantity} {trade.secondSymbol} at {trade.price} {trade.secondSymbol} each</div>
                 </div>
             ))
         }
+
         if(sellOrders.length > 0) {
             sellOrders = sellOrders.map((trade, index) => (
                 <div key={trade.id + index} className="trade-container sell-trade">
                     <div className="trade-symbol">{trade.firstSymbol}</div>
                     <div className="trade-symbol">{trade.secondSymbol}</div>
-                    <div className="trade-pricing">{trade.type} {trade.quantity} {trade.firstSymbol} at {trade.price} {trade.secondSymbol} each</div>
+                    <div className="trade-pricing">{trade.type} {trade.quantity} {trade.secondSymbol} at {trade.price} {trade.secondSymbol} each</div>
                 </div>
             ))
         }
