@@ -230,6 +230,15 @@ class Sidebar extends React.Component {
         return myWeb3.utils.fromAscii(name)
     }
 
+    resetInputs() {
+        this.refs.limitOrderPrice.value = ''
+        this.refs.orderQuantity.value = ''
+        this.setState({
+            limitOrderPrice: 0,
+            orderQuantity: 0,
+        })
+    }
+
     render() {
         return (
             <div className="sidebar">
@@ -269,6 +278,7 @@ class Sidebar extends React.Component {
                     } else {
                         this.props.marketOrder(this.bytes32('buy'), this.bytes32(this.props.firstSymbol), this.bytes32(this.props.secondSymbol), this.state.orderQuantity)
                     }
+                    this.resetInputs()
                 }}>Buy {this.props.firstSymbol}</button>
                 <button onClick={() => {
                     if(this.state.orderQuantity == 0) return alert('You must specify how many tokens you want to sell')
@@ -282,6 +292,7 @@ class Sidebar extends React.Component {
                     } else {
                         this.props.marketOrder(this.bytes32('sell'), this.bytes32(this.props.firstSymbol), this.bytes32(this.props.secondSymbol), this.state.orderQuantity)
                     }
+                    this.resetInputs()
                 }} className="sell">Sell {this.props.firstSymbol}</button>
                 <select defaultValue="market-order" onChange={selected => {
                     if(selected.target.value == 'limit-order') {
@@ -293,10 +304,10 @@ class Sidebar extends React.Component {
                     <option value="market-order">Market Order</option>
                     <option value="limit-order">Limit Order</option>
                 </select>
-                <input onChange={event => {
+                <input ref="limitOrderPrice" onChange={event => {
                     this.setState({limitOrderPrice: event.target.value})
                 }} className={this.state.selectedLimitOrder ? '' : 'hidden'} type="number" placeholder="Price to buy or sell at..." />
-                <input onChange={event => {
+                <input ref="orderQuantity" onChange={event => {
                     this.setState({orderQuantity: event.target.value})
                 }} type="number" placeholder={`Quantity of ${this.props.firstSymbol} to buy or sell...`} />
             </div>
